@@ -96,7 +96,6 @@ window.loginUser = async function () {
     alert("LOGIN ERROR: " + err.message);
   }
 };
-
 /* ===========================
    LOGOUT (ADMIN & USER)
 =========================== */
