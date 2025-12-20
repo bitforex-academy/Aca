@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Make Payment | Bitforex Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;font-family:Arial;background:#0b1220;color:#fff;}
+.topbar{background:#020617;padding:15px;border-bottom:1px solid #1e293b;display:flex;align-items:center;}
+.topbar button{background:none;border:none;color:#22c55e;font-size:16px;margin-right:10px;}
+.content{padding:20px;}
+.card{background:#1e293b;padding:15px;border-radius:12px;margin-bottom:20px;}
+.copy{background:#020617;padding:10px;border-radius:6px;margin-top:5px;}
+input,textarea,button{width:100%;padding:10px;margin-top:10px;border-radius:6px;border:none;}
+button{background:#22c55e;font-weight:bold;}
+.popup{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);justify-content:center;align-items:center;}
+.popup .box{background:#020617;padding:20px;border-radius:12px;text-align:center;}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <button onclick="history.back()">⬅ Back</button>
+  <b>Payment</b>
+</div>
+
+<div class="content">
+
+  <!-- Bank -->
+  <div class="card">
+    <h3>🏦 Bank Payment</h3>
+    <div class="copy" id="bankName"></div>
+    <div class="copy" id="accountName"></div>
+    <div class="copy" id="accountNumber"></div>
+  </div>
+
+  <!-- BTC -->
+  <div class="card">
+    <h3>₿ BTC Payment</h3>
+    <div class="copy" id="btcWallet"></div>
+  </div>
+
+  <!-- Submit -->
+  <div class="card">
+    <h3>📤 Submit Proof</h3>
+    <textarea id="desc" placeholder="Payment description"></textarea>
+    <input type="file" id="proof">
+    <button onclick="submitPayment()">Submit Payment</button>
+  </div>
+
+</div>
+
+<div class="popup" id="popup">
+  <div class="box">
+    <h3>⏳ Payment Pending</h3>
+    <p>Please wait for Admin to confirm your payment.</p>
+    <button onclick="closePopup()">OK</button>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module" src="firebase.js"></script>
+
+<script type="module">
+import { auth, db, storage } from "./firebase.js";
+import { ref as dbRef, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { ref as stRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+/* 🔄 Live admin payment details */
+onValue(dbRef(db,"paymentSettings"), snap=>{
+  if(!snap.exists()) return;
+  const d=snap.val();
+  bankName.innerText="Bank: "+d.bank;
+  accountName.innerText="Account Name: "+d.name;
+  accountNumber.innerText="Account No: "+d.number;
+  btcWallet.innerText="Wallet: "+d.btc;
+});
+
+/* 📤 Submit payment */
+window.submitPayment = async ()=>{
+  const user = auth.currentUser;
+  if(!user) return alert("Login required");
+
+  const file = proof.files[0];
+  if(!file) return alert("Upload proof");
+
+  const path = `payments/${user.uid}/${Date.now()}`;
+  const storageRef = stRef(storage, path);
+  await uploadBytes(storageRef, file);
+  const url = await getDownloadURL(storageRef);
+
+  const payRef = push(dbRef(db,"payments"));
+  await set(payRef,{
+    uid:user.uid,
+    email:user.email,
+    desc:desc.value,
+    proof:url,
+    status:"pending",
+    time:Date.now()
+  });
+
+  showPopup();
+};
+
+function showPopup(){popup.style.display="flex";}
+function closePopup(){popup.style.display="none";}
+</script>
+
+</body>
+</html>

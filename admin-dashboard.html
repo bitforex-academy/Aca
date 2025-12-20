@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard | Bitforex Academy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1220;
+      color: #fff;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #020617;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .icons a {
+      margin-left: 15px;
+      font-size: 18px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .content {
+      padding: 20px;
+      padding-bottom: 90px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .card {
+      background: linear-gradient(to right, #0ea5e9, #22c55e);
+      padding: 20px;
+      border-radius: 12px;
+      color: #000;
+      font-weight: bold;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .card span {
+      display: block;
+      font-size: 22px;
+      margin-top: 5px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #020617;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+    }
+
+    .nav-item {
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+      text-decoration: none;
+    }
+
+    .nav-item span {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+      color: #22c55e;
+    }
+
+    .nav-item.active {
+      color: #22c55e;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <h2>Admin Dashboard</h2>
+    <div class="icons">
+      <a href="admin-notifications.html">🔔</a>
+      <a href="admin-settings.html">⚙️</a>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="cards">
+
+      <a href="admin-payment.html" class="card">
+        Payment Setting
+        <span>📠</span>
+      </a>
+
+      <a href="admin-courses.html" class="card">
+        Courses Settings 
+        <span>📜</span>
+      </a>
+
+      <a href="admin-subscriptions.html" class="card">
+        Subscription Settings
+        <span>📆</span>
+      </a>
+
+      <a href="admin-messages.html" class="card">
+        Messages
+        <span id="unreadCount">0</span>
+      </a>
+
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="admin-dashboard.html" class="nav-item active">
+      <span>🏠</span>Home
+    </a>
+    <a href="admin-users.html" class="nav-item">
+      <span>👥</span>Users
+    </a>
+    <a href="admin-payments.html" class="nav-item">
+      <span>💳</span>Payments
+    </a>
+    <a href="admin-messages.html" class="nav-item">
+      <span>💬</span>Messages
+    </a>
+    <a href="admin-settings.html" class="nav-item">
+      <span>⚙️</span>Settings
+    </a>
+  </div>
+
+  <!-- Firebase + App -->
+  <script type="module" src="firebase.js"></script>
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>

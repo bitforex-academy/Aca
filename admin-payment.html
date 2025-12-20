@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Payment Settings | Bitforex Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0b1220;
+  color:#fff;
+}
+.topbar{
+  background:#020617;
+  padding:15px;
+  border-bottom:1px solid #1e293b;
+  display:flex;
+  align-items:center;
+}
+.topbar button{
+  background:none;
+  border:none;
+  color:#22c55e;
+  font-size:16px;
+  margin-right:10px;
+}
+.content{
+  padding:20px;
+}
+.card{
+  background:#1e293b;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:20px;
+}
+input, textarea, button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:6px;
+  border:none;
+}
+button{
+  background:#22c55e;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <button onclick="history.back()">⬅ Back</button>
+  <b>Payment Settings</b>
+</div>
+
+<div class="content">
+
+  <!-- Bank Payment -->
+  <div class="card">
+    <h3>🏦 Bank Payment</h3>
+    <input id="bankName" placeholder="Bank Name">
+    <input id="accountName" placeholder="Account Name">
+    <input id="accountNumber" placeholder="Account Number">
+    <button id="saveBank">Save Bank Details</button>
+  </div>
+
+  <!-- Crypto Payment -->
+  <div class="card">
+    <h3>₿ BTC Payment</h3>
+    <input id="btcAddress" placeholder="BTC Wallet Address">
+    <textarea id="btcNote" placeholder="Network / Notes"></textarea>
+    <button id="saveBTC">Save BTC Details</button>
+  </div>
+
+</div>
+
+<!-- Firebase + App -->
+<script type="module" src="firebase.js"></script>
+<script type="module" src="app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Subscription | Bitforex Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;font-family:Arial;background:#0b1220;color:#fff;}
+.topbar{background:#020617;padding:15px;border-bottom:1px solid #1e293b;}
+.content{padding:20px;padding-bottom:80px;}
+.card{
+  background:linear-gradient(to right,#0ea5e9,#22c55e);
+  padding:20px;
+  border-radius:12px;
+  color:#000;
+  margin-bottom:15px;
+}
+.card button{
+  margin-top:15px;
+  background:#020617;
+  color:#22c55e;
+  padding:10px;
+  border:none;
+  width:100%;
+  border-radius:8px;
+}
+.bottom-nav{
+  position:fixed;bottom:0;width:100%;height:60px;
+  background:#020617;display:flex;justify-content:space-around;
+  align-items:center;border-top:1px solid #1e293b;
+}
+.bottom-nav a{color:#22c55e;text-decoration:none;font-size:12px;text-align:center;}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">💳 Subscription</div>
+
+<div class="content">
+  <p>Status: <b id="status" style="color:red">Not Active</b></p>
+  <div id="plans"></div>
+</div>
+
+<div class="bottom-nav">
+  <a href="user-chat.html">💬<br>Chat</a>
+  <a href="user-subscription.html">💳<br>Subs</a>
+  <a href="user-courses.html">📘<br>Courses</a>
+  <a href="user-settings.html">⚙️<br>Settings</a>
+</div>
+
+<!-- Firebase -->
+<script type="module" src="firebase.js"></script>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  doc, getDoc, collection, getDocs
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const plansBox = document.getElementById("plans");
+const statusEl = document.getElementById("status");
+
+/* Check user + subscription */
+onAuthStateChanged(auth, async user=>{
+  if(!user) return location.href="login.html";
+
+  const userRef = doc(db,"users",user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if(userSnap.exists() && userSnap.data().active){
+    statusEl.textContent = "Active";
+    statusEl.style.color = "#22c55e";
+  }
+
+  loadPlans(userSnap.exists() ? userSnap.data().active : false);
+});
+
+/* Load plans */
+async function loadPlans(isActive){
+  plansBox.innerHTML="";
+  const snap = await getDocs(collection(db,"plans"));
+
+  snap.forEach(docSnap=>{
+    const p = docSnap.data();
+
+    const div = document.createElement("div");
+    div.className="card";
+    div.innerHTML=`
+      <h3>${p.name}</h3>
+      <p>₦${p.price} / ${p.duration}</p>
+      ${isActive ? "" : `<button onclick="subscribe('${docSnap.id}')">Subscribe</button>`}
+    `;
+    plansBox.appendChild(div);
+  });
+}
+
+/* Subscribe */
+window.subscribe = (planId)=>{
+  localStorage.setItem("selectedPlan", planId);
+  location.href="user-payment.html";
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Courses | Bitforex Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;font-family:Arial;background:#0b1220;color:#fff;}
+.topbar{background:#020617;padding:15px;border-bottom:1px solid #1e293b;}
+.content{padding:20px;padding-bottom:80px;}
+.course{
+  background:#1e293b;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+.course button{
+  background:#22c55e;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+}
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  height:60px;
+  background:#020617;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  border-top:1px solid #1e293b;
+}
+.bottom-nav a{
+  color:#22c55e;
+  text-decoration:none;
+  font-size:12px;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">📘 Courses</div>
+
+<div class="content">
+  <div class="course">
+    <b>SMC</b>
+    <p>Smart Money Concept</p>
+    <button onclick="sendCourse('SMC','Smart Money Concept')">View</button>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <a href="user-chat.html">💬<br>Chat</a>
+  <a href="user-subscription.html">💳<br>Subs</a>
+  <a href="user-courses.html">📘<br>Courses</a>
+  <a href="user-settings.html">⚙️<br>Settings</a>
+</div>
+
+<!-- Firebase -->
+<script type="module" src="firebase.js"></script>
+<script type="module" src="app.js"></script>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+window.sendCourse = (title, desc) => {
+  auth.onAuthStateChanged((user) => {
+    if (!user) return;
+
+    const chatRef = ref(db, "chats/" + user.uid + "/messages");
+
+    push(chatRef, {
+      sender: "user",
+      text: `📘 Course Request\nCourse: ${title}\nDescription: ${desc}`,
+      time: Date.now()
+    });
+
+    // Redirect to chat
+    location.href = "user-chat.html";
+  });
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>User Chat | Bitforex Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0b1220;
+  color:#fff;
+  height:100vh;
+  overflow:hidden;
+}
+.topbar{
+  background:#020617;
+  padding:15px;
+  border-bottom:1px solid #1e293b;
+}
+.chat{
+  height:calc(100vh - 130px);
+  overflow-y:auto;
+  padding:15px;
+}
+.msg{
+  background:#1e293b;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:10px;
+  max-width:80%;
+}
+.msg.user{
+  background:#22c55e;
+  color:#000;
+  margin-left:auto;
+}
+.input-box{
+  position:fixed;
+  bottom:60px;
+  width:100%;
+  display:flex;
+  background:#020617;
+  padding:10px;
+}
+.input-box input{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:6px;
+}
+.input-box button{
+  margin-left:5px;
+  background:#22c55e;
+  border:none;
+  padding:10px 15px;
+  border-radius:6px;
+}
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  height:60px;
+  background:#020617;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  border-top:1px solid #1e293b;
+}
+.bottom-nav a{
+  color:#22c55e;
+  text-decoration:none;
+  text-align:center;
+  font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">💬 Chat with Admin</div>
+
+<div class="chat" id="chatBox">
+  <!-- messages load here -->
+</div>
+
+<div class="input-box">
+  <button disabled>📷</button>
+  <input id="messageInput" placeholder="Type message...">
+  <button id="sendBtn">Send</button>
+</div>
+
+<div class="bottom-nav">
+  <a href="user-chat.html">💬<br>Chat</a>
+  <a href="user-subscription.html">💳<br>Subs</a>
+  <a href="user-courses.html">📘<br>Courses</a>
+  <a href="user-settings.html">⚙️<br>Settings</a>
+</div>
+
+<!-- Firebase -->
+<script type="module" src="firebase.js"></script>
+
+<!-- App Logic -->
+<script type="module" src="app.js"></script>
+
+</body>
+</html>

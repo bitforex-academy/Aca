@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Register | Bitforex Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0b1220;
+  color:#fff;
+}
+.container{
+  padding:30px;
+}
+.card{
+  background:#1e293b;
+  margin-top: 100px;
+  padding:20px;
+  border-radius:12px;
+}
+h2{margin-top:0}
+.input-group{
+  position:relative;
+  margin-top:12px;
+}
+input{
+  width:95%;
+  padding:12px;
+  border-radius:6px;
+  border:none;
+}
+.eye{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  cursor:pointer;
+  color:#94a3b8;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:18px;
+  border-radius:6px;
+  border:none;
+  background:#22c55e;
+  font-weight:bold;
+}
+a{color:#22c55e;text-decoration:none}
+
+/* popup */
+.popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.popup-card{
+  background:#1e293b;
+  padding:20px;
+  border-radius:12px;
+  width:90%;
+  max-width:350px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="card">
+    <h2>📝 Register</h2>
+
+    <input id="regUsername" type="text" placeholder="Username">
+
+    <input id="regEmail" type="email" placeholder="Email" style="margin-top:12px;">
+
+    <div class="input-group">
+      <input id="regPassword" type="password" placeholder="Password">
+      <span class="eye" onclick="togglePass('regPassword', this)">👁</span>
+    </div>
+
+    <button onclick="registerUser()">Create Account</button>
+
+    <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+</div>
+
+<!-- POPUP -->
+<div class="popup" id="regPopup">
+  <div class="popup-card">
+    <h3>✅ Account Created</h3>
+    <p id="userDetails"></p>
+    <button onclick="location.href='login.html'">Proceed to Login</button>
+  </div>
+</div>
+
+<script>
+function togglePass(id, el){
+  const input = document.getElementById(id);
+  if(input.type === "password"){
+    input.type = "text";
+    el.textContent = "🙈";
+  }else{
+    input.type = "password";
+    el.textContent = "👁";
+  }
+}
+</script>
+
+<script type="module" src="firebase.js"></script>
+<script type="module" src="app.js"></script>
+
+</body>
+</html>

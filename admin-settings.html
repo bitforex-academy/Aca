@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Settings</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0b1220;
+  color:#fff;
+  height:100vh;
+  overflow:hidden;
+}
+.topbar{
+  height:60px;
+  padding:15px;
+  background:#020617;
+  border-bottom:1px solid #1e293b;
+  display:flex;
+  align-items:center;
+}
+.settings{
+  position:fixed;
+  top:60px;
+  bottom:70px;
+  left:0;
+  right:0;
+  overflow-y:auto;
+  padding:20px;
+}
+.section{
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:15px;
+}
+.section h4{
+  margin-top:0;
+}
+input{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  border-radius:8px;
+  border:none;
+  background:#0b1220;
+  color:#fff;
+  outline:none;
+}
+.submit-btn{
+  margin-top:10px;
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#22c55e;
+  color:#000;
+  font-weight:bold;
+}
+.logout{
+  background:#ef4444;
+  color:#fff;
+  border:none;
+  padding:12px;
+  width:100%;
+  border-radius:10px;
+  font-size:16px;
+  font-weight:bold;
+}
+/* Bottom nav */
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  height:70px;
+  background:#020617;
+  border-top:1px solid #1e293b;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+}
+.nav-item{
+  text-decoration:none;
+  color:#94a3b8;
+  font-size:12px;
+  text-align:center;
+}
+.nav-item span{
+  display:block;
+  font-size:18px;
+  color:#22c55e;
+}
+.nav-item.active{
+  color:#22c55e;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <h3>Settings</h3>
+</div>
+
+<div class="settings">
+
+  <!-- Change Email -->
+  <div class="section">
+    <h4>Change Email</h4>
+    <input id="newEmail" type="email" placeholder="New email address">
+    <button class="submit-btn" onclick="updateEmail()">Update Email</button>
+  </div>
+
+  <!-- Change Password -->
+  <div class="section">
+    <h4>Change Password</h4>
+    <input id="newPassword" type="password" placeholder="New password">
+    <button class="submit-btn" onclick="updatePassword()">Update Password</button>
+  </div>
+
+  <!-- Logout -->
+  <button class="logout" onclick="logout()">Log Out</button>
+
+</div>
+
+<div class="bottom-nav">
+  <a href="admin-dashboard.html" class="nav-item"><span>🏠</span>Home</a>
+  <a href="admin-users.html" class="nav-item"><span>👥</span>Users</a>
+  <a href="admin-payments.html" class="nav-item"><span>💳</span>Payments</a>
+  <a href="admin-messages.html" class="nav-item"><span>💬</span>Messages</a>
+  <a href="admin-settings.html" class="nav-item active"><span>⚙️</span>Settings</a>
+</div>
+
+<script>
+    <script type="module" src="firebase.js"></script>
+<script type="module" src="app.js"></script>
+
+// Load admin details from localStorage
+const adminData = JSON.parse(localStorage.getItem("adminData")) || { email: "", password: "" };
+
+function updateEmail() {
+  const newEmail = document.getElementById("newEmail").value.trim();
+  if (!newEmail) return alert("Please enter a valid email.");
+  adminData.email = newEmail;
+  localStorage.setItem("adminData", JSON.stringify(adminData));
+  alert("✅ Email updated successfully!");
+}
+
+function updatePassword() {
+  const newPassword = document.getElementById("newPassword").value.trim();
+  if (!newPassword) return alert("Please enter a new password.");
+  adminData.password = newPassword;
+  localStorage.setItem("adminData", JSON.stringify(adminData));
+  alert("✅ Password updated successfully!");
+}
+
+function logout() {
+  localStorage.removeItem("isAdminLoggedIn");
+  alert("You’ve been logged out.");
+  window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
