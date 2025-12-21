@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>User Chat | Bitforex Academy</title>
@@ -41,6 +41,7 @@ body{
   bottom:60px;
   width:100%;
   display:flex;
+  gap:5px;
   background:#020617;
   padding:10px;
 }
@@ -51,11 +52,11 @@ body{
   border-radius:6px;
 }
 .input-box button{
-  margin-left:5px;
   background:#22c55e;
   border:none;
-  padding:10px 15px;
+  padding:10px 14px;
   border-radius:6px;
+  font-weight:bold;
 }
 .bottom-nav{
   position:fixed;
@@ -81,14 +82,12 @@ body{
 
 <div class="topbar">💬 Chat with Admin</div>
 
-<div class="chat" id="chatBox">
-  <!-- messages load here -->
-</div>
+<div class="chat" id="chatBox"></div>
 
 <div class="input-box">
-  <button disabled>📷</button>
+  <button type="button">📷</button>
   <input id="messageInput" placeholder="Type message...">
-  <button id="sendBtn">Send</button>
+  <button id="sendBtn" type="button">Send</button>
 </div>
 
 <div class="bottom-nav">
@@ -98,11 +97,72 @@ body{
   <a href="user-settings.html">⚙️<br>Settings</a>
 </div>
 
-<!-- Firebase -->
-<script type="module" src="firebase.js"></script>
+<!-- Firebase core -->
+<script type="module">
+import { auth, db } from "./firebase.js";
 
-<!-- App Logic -->
-<script type="module" src="app.js"></script>
+import { onAuthStateChanged } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+import {
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const chatBox = document.getElementById("chatBox");
+const input = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+
+let currentUser = null;
+
+/* AUTH CHECK */
+onAuthStateChanged(auth, user=>{
+  if(!user){
+    location.href="login.html";
+    return;
+  }
+  currentUser = user;
+  loadMessages();
+});
+
+/* LOAD MESSAGES */
+function loadMessages(){
+  const q = query(
+    collection(db, "messages"),
+    orderBy("createdAt","asc")
+  );
+
+  onSnapshot(q, snap=>{
+    chatBox.innerHTML="";
+    snap.forEach(doc=>{
+      const data = doc.data();
+      const div = document.createElement("div");
+      div.className = "msg" + (data.senderId === currentUser.uid ? " user" : "");
+      div.textContent = data.text;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+  });
+}
+
+/* SEND MESSAGE */
+sendBtn.onclick = async ()=>{
+  const text = input.value.trim();
+  if(!text) return;
+
+  await addDoc(collection(db,"messages"),{
+    text: text,
+    senderId: currentUser.uid,
+    createdAt: serverTimestamp()
+  });
+
+  input.value="";
+};
+</script>
 
 </body>
 </html>
