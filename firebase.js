@@ -1,10 +1,13 @@
 // firebase.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
+import { getAuth } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// Your web app's Firebase configuration
+import { getFirestore } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBhClpR0zHg4XYyTsDupLkmDIp_EkIzHEE",
   authDomain: "bitforex-academy-3a8f4.firebaseapp.com",
@@ -13,6 +16,7 @@ const firebaseConfig = {
   messagingSenderId: "659879098852",
   appId: "1:659879098852:web:16545b1980e2ed284a6ff1"
 };
+
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
