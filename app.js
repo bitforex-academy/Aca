@@ -1,27 +1,24 @@
 /* ===========================
    IMPORTS
 =========================== */
-import {
-  auth,
-  db
-} from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
   doc,
   setDoc,
   getDoc,
   serverTimestamp
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ===========================
-   REGISTER USER
+   REGISTER USER (AUTO ADMIN)
 =========================== */
 window.registerUser = async function () {
   const username = document.getElementById("regUsername").value.trim();
@@ -34,22 +31,44 @@ window.registerUser = async function () {
   }
 
   try {
+    // create auth user
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const user = cred.user;
 
-    // create Firestore user record
+    // 🔍 check if admin already exists
+    const adminMetaRef = doc(db, "meta", "admin");
+    const adminMetaSnap = await getDoc(adminMetaRef);
+
+    let role = "user";
+
+    // first registered user becomes admin
+    if (!adminMetaSnap.exists()) {
+      role = "admin";
+
+      await setDoc(adminMetaRef, {
+        created: true,
+        createdAt: serverTimestamp()
+      });
+    }
+
+    // create user record
     await setDoc(doc(db, "users", user.uid), {
       username: username,
       email: email,
-      role: "user",              // default
-      subscribed: false,
+      role: role,          // admin or user
+      active: false,
       createdAt: serverTimestamp()
     });
 
-    // show popup
-    document.getElementById("popupUsername").innerText = username;
-    document.getElementById("popupEmail").innerText = email;
-    document.getElementById("regPopup").style.display = "flex";
+    // show popup if exists
+    if (document.getElementById("regPopup")) {
+      document.getElementById("popupUsername").innerText = username;
+      document.getElementById("popupEmail").innerText = email;
+      document.getElementById("regPopup").style.display = "flex";
+    } else {
+      alert("Registration successful. Please login.");
+      window.location.href = "login.html";
+    }
 
   } catch (err) {
     alert(err.message);
@@ -60,44 +79,42 @@ window.registerUser = async function () {
    LOGIN USER / ADMIN
 =========================== */
 window.loginUser = async function () {
-  console.log("LOGIN STARTED");
-
-  const email = document.getElementById("loginEmail").value;
+  const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
-  console.log("EMAIL:", email);
+  if (!email || !password) {
+    alert("Email and password required");
+    return;
+  }
 
   try {
     const cred = await signInWithEmailAndPassword(auth, email, password);
-    console.log("AUTH OK:", cred.user.uid);
+    const uid = cred.user.uid;
 
-    const ref = doc(db, "users", cred.user.uid);
-    const snap = await getDoc(ref);
+    const userRef = doc(db, "users", uid);
+    const userSnap = await getDoc(userRef);
 
-    if (!snap.exists()) {
-      alert("User record NOT found in Firestore");
-      console.log("NO FIRESTORE DOC");
+    if (!userSnap.exists()) {
+      alert("User record not found. Please register again.");
+      await signOut(auth);
       return;
     }
 
-    const data = snap.data();
-    console.log("USER DATA:", data);
+    const data = userSnap.data();
 
-    if (data.role === "Admin" || data.role === "admin") {
-      alert("ADMIN LOGIN");
-      location.href = "admin-dashboard.html";
+    if (data.role === "admin") {
+      window.location.href = "admin-dashboard.html";
     } else {
-      alert("USER LOGIN");
-      location.href = "user-chat.html";
+      window.location.href = "user-chat.html";
     }
 
   } catch (err) {
-    console.error(err);
-    alert("LOGIN ERROR: " + err.message);
+    alert(err.message);
   }
 };
+
 /* ===========================
-   LOGOUT (ADMIN & USER)
+   LOGOUT
 =========================== */
 window.logoutUser = async function () {
   await signOut(auth);
@@ -105,8 +122,7 @@ window.logoutUser = async function () {
 };
 
 /* ===========================
-   AUTH GUARD (OPTIONAL)
-   Protect admin pages
+   AUTH GUARD (ADMIN PAGES)
 =========================== */
 onAuthStateChanged(auth, async (user) => {
   if (!user) return;
@@ -116,7 +132,6 @@ onAuthStateChanged(auth, async (user) => {
 
   const role = snap.data().role;
 
-  // prevent user from entering admin pages
   if (
     window.location.pathname.includes("admin") &&
     role !== "admin"
