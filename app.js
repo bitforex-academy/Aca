@@ -1,149 +1,204 @@
 /* ===========================
    IMPORTS
 =========================== */
-import { auth, db } from "./firebase.js";
+import { auth, db, storage } from "./firebase.js";
 
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
   doc,
   setDoc,
   getDoc,
-  serverTimestamp
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  addDoc,
+  serverTimestamp,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
 /* ===========================
-   REGISTER USER (AUTO ADMIN)
+   REGISTRATION (AUTO ADMIN)
 =========================== */
-window.registerUser = async function () {
-  const username = document.getElementById("regUsername").value.trim();
-  const email = document.getElementById("regEmail").value.trim();
-  const password = document.getElementById("regPassword").value;
+export async function registerUser(username, email, password) {
+  if (!username || !email || !password) throw new Error("All fields are required");
 
-  if (!username || !email || !password) {
-    alert("All fields are required");
-    return;
-  }
+  // create auth user
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
+  const user = cred.user;
 
-  try {
-    // create auth user
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    const user = cred.user;
+  // check if admin exists
+  const adminMetaRef = doc(db, "meta", "admin");
+  const adminMetaSnap = await getDoc(adminMetaRef);
 
-    // 🔍 check if admin already exists
-    const adminMetaRef = doc(db, "meta", "admin");
-    const adminMetaSnap = await getDoc(adminMetaRef);
+  let role = "user";
 
-    let role = "user";
-
-    // first registered user becomes admin
-    if (!adminMetaSnap.exists()) {
-      role = "admin";
-
-      await setDoc(adminMetaRef, {
-        created: true,
-        createdAt: serverTimestamp()
-      });
-    }
-
-    // create user record
-    await setDoc(doc(db, "users", user.uid), {
-      username: username,
-      email: email,
-      role: role,          // admin or user
-      active: false,
+  if (!adminMetaSnap.exists()) {
+    role = "admin";
+    await setDoc(adminMetaRef, {
+      created: true,
       createdAt: serverTimestamp()
     });
-
-    // show popup if exists
-    if (document.getElementById("regPopup")) {
-      document.getElementById("popupUsername").innerText = username;
-      document.getElementById("popupEmail").innerText = email;
-      document.getElementById("regPopup").style.display = "flex";
-    } else {
-      alert("Registration successful. Please login.");
-      window.location.href = "login.html";
-    }
-
-  } catch (err) {
-    alert(err.message);
   }
-};
+
+  await setDoc(doc(db, "users", user.uid), {
+    username,
+    email,
+    role,
+    active: true,
+    createdAt: serverTimestamp()
+  });
+
+  return { uid: user.uid, role };
+}
 
 /* ===========================
-   LOGIN USER / ADMIN
+   LOGIN
 =========================== */
-window.loginUser = async function () {
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value;
+export async function loginUser(email, password) {
+  if (!email || !password) throw new Error("Email and password required");
 
-  if (!email || !password) {
-    alert("Email and password required");
-    return;
-  }
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  const uid = cred.user.uid;
 
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    const uid = cred.user.uid;
+  const userSnap = await getDoc(doc(db, "users", uid));
+  if (!userSnap.exists()) throw new Error("User record not found");
 
-    const userRef = doc(db, "users", uid);
-    const userSnap = await getDoc(userRef);
+  const role = userSnap.data().role;
 
-    if (!userSnap.exists()) {
-      alert("User record not found. Please register again.");
-      await signOut(auth);
-      return;
-    }
-
-    const data = userSnap.data();
-
-    if (data.role === "admin") {
-      window.location.href = "admin-dashboard.html";
-    } else {
-      window.location.href = "user-chat.html";
-    }
-
-  } catch (err) {
-    alert(err.message);
-  }
-};
+  return { uid, role };
+}
 
 /* ===========================
    LOGOUT
 =========================== */
-window.logoutUser = async function () {
+export async function logoutUser() {
   await signOut(auth);
-  window.location.href = "login.html";
-};
+}
 
 /* ===========================
-   AUTH GUARD (ADMIN PAGES)
+   FORGOT PASSWORD
 =========================== */
-onAuthStateChanged(auth, async (user) => {
-  if (!user) return;
-
-  const snap = await getDoc(doc(db, "users", user.uid));
-  if (!snap.exists()) return;
-
-  const role = snap.data().role;
-
-  if (
-    window.location.pathname.includes("admin") &&
-    role !== "admin"
-  ) {
-    alert("Unauthorized access");
-    window.location.href = "login.html";
-  }
-});
+export async function forgotPassword(email) {
+  if (!email) throw new Error("Email required");
+  await sendPasswordResetEmail(auth, email);
+}
 
 /* ===========================
-   REG POPUP REDIRECT
+   AUTH GUARD
 =========================== */
-window.goLogin = function () {
-  window.location.href = "login.html";
-};
+export function adminGuard(callback) {
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) return;
+
+    const role = snap.data().role;
+    if (role !== "admin") {
+      alert("Unauthorized access");
+      window.location.href = "login.html";
+    } else {
+      if (callback) callback(user, snap.data());
+    }
+  });
+}
+
+/* ===========================
+   CHAT (ADMIN)
+=========================== */
+export function adminLoadUsers(callback) {
+  const usersRef = collection(db, "users");
+  getDocs(usersRef).then(snap => {
+    const users = [];
+    snap.forEach(doc => {
+      if (doc.data().role !== "admin") users.push({ id: doc.id, ...doc.data() });
+    });
+    callback(users);
+  });
+}
+
+export function adminSetChatUser(userId, onMessages) {
+  const chatRef = collection(db, "messages");
+  const q = query(chatRef, orderBy("createdAt", "asc"));
+
+  getDocs(q).then(snap => {
+    snap.forEach(doc => {
+      const msg = doc.data();
+      if ((msg.senderId === userId) || (msg.receiverId === userId)) {
+        onMessages(msg);
+      }
+    });
+  });
+}
+
+export async function adminSendTextMessage(userId, text) {
+  await addDoc(collection(db, "messages"), {
+    senderId: auth.currentUser.uid,
+    receiverId: userId,
+    senderRole: "admin",
+    text,
+    createdAt: serverTimestamp()
+  });
+}
+
+export async function adminSendImageMessage(userId, file) {
+  const fileRef = ref(storage, `chats/${Date.now()}_${file.name}`);
+  await uploadBytes(fileRef, file);
+  const url = await getDownloadURL(fileRef);
+
+  await addDoc(collection(db, "messages"), {
+    senderId: auth.currentUser.uid,
+    receiverId: userId,
+    senderRole: "admin",
+    imageUrl: url,
+    createdAt: serverTimestamp()
+  });
+}
+
+/* ===========================
+   NOTIFICATIONS
+=========================== */
+export async function loadNotifications(callback) {
+  const notifRef = collection(db, "notifications");
+  const q = query(notifRef, orderBy("createdAt", "desc"));
+
+  const snap = await getDocs(q);
+  const notifications = [];
+  snap.forEach(doc => {
+    notifications.push({ id: doc.id, ...doc.data() });
+  });
+  callback(notifications);
+}
+
+/* ===========================
+   COURSES (PLACEHOLDER)
+=========================== */
+export async function loadCourses(callback) {
+  const snap = await getDocs(collection(db, "courses"));
+  const courses = [];
+  snap.forEach(doc => courses.push({ id: doc.id, ...doc.data() }));
+  callback(courses);
+}
+
+export async function addCourse(data) {
+  await addDoc(collection(db, "courses"), {
+    ...data,
+    createdAt: serverTimestamp()
+  });
+}
