@@ -6,57 +6,119 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0b1220;
-  color:#fff;
-}
-.container{
-  padding:30px;
-}
-.card{
-  background:#1e293b;
-  padding:20px;
-  border-radius:12px;
-}
-h2{margin-top:0}
-.input-group{
-  position:relative;
-  margin-top:10px;
-}
-input{
-  width:100%;
-  padding:12px;
-  border-radius:6px;
-  border:none;
-}
-.eye{
-  position:absolute;
-  right:12px;
-  top:50%;
-  transform:translateY(-50%);
-  cursor:pointer;
-  color:#94a3b8;
-}
-button{
-  width:100%;
-  padding:12px;
-  margin-top:15px;
-  border-radius:6px;
-  border:none;
-  background:#22c55e;
-  font-weight:bold;
-}
-a{
-  color:#22c55e;
-  text-decoration:none;
-  font-size:14px;
-}
-.small{
-  text-align:right;
-  margin-top:5px;
-}
+  /* Colors & font (keeps your look) */
+  :root{
+    --bg: #0b1220;
+    --card: #1e293b;
+    --muted: #94a3b8;
+    --accent: #22c55e;
+    --text: #ffffff;
+  }
+
+  html,body{height:100%;margin:0}
+  body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+
+  /* container centers card and limits width */
+  .container{
+    width:100%;
+    max-width:420px; /* desktop card width */
+  }
+
+  .card{
+    background: var(--card);
+    padding:28px;
+    border-radius:12px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+  }
+
+  h2{
+    margin:0 0 8px 0;
+    font-size:20px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  input{
+    width:100%;
+    padding:12px;
+    border-radius:6px;
+    border:none;
+    background: rgba(255,255,255,0.03);
+    color:var(--text);
+    box-sizing:border-box;
+    outline:none;
+    font-size:15px;
+  }
+
+  .input-group{
+    position:relative;
+    margin-top:12px;
+  }
+
+  .eye{
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    color:var(--muted);
+    user-select:none;
+  }
+
+  button{
+    width:100%;
+    padding:12px;
+    margin-top:18px;
+    border-radius:6px;
+    border:none;
+    background: var(--accent);
+    color:#042107;
+    font-weight:700;
+    cursor:pointer;
+    font-size:15px;
+  }
+
+  a{
+    color: var(--accent);
+    text-decoration:none;
+    font-size:14px;
+  }
+
+  .small{
+    text-align:right;
+    margin-top:8px;
+    font-size:14px;
+  }
+
+  p{margin-top:18px;font-size:14px;color:var(--muted)}
+
+  /* Responsive adjustments (phone) */
+  @media (max-width:420px){
+    .container{max-width:380px}
+    .card{padding:20px}
+    h2{font-size:18px}
+  }
+
+  /* Slightly larger layout on wide screens */
+  @media (min-width:900px){
+    .container{max-width:520px}
+    .card{padding:36px}
+    h2{font-size:22px}
+    input{font-size:16px}
+    button{font-size:16px}
+  }
 </style>
 </head>
 
@@ -77,14 +139,12 @@ a{
       <a href="#" onclick="forgotPassword()">Forgot password?</a>
     </div>
 
-    <!-- IMPORTANT -->
     <button type="button" onclick="loginUser()">Login</button>
 
     <p>No account? <a href="register.html">Register</a></p>
   </div>
 </div>
 
-<!-- LOCAL FUNCTIONS (safe) -->
 <script>
 function togglePass(){
   const input = document.getElementById("loginPassword");
@@ -100,7 +160,7 @@ function togglePass(){
 }
 </script>
 
-<!-- FIREBASE LOGIC -->
+<!-- your module; app.js must include the wrapper snippet from above -->
 <script type="module" src="./app.js"></script>
 
 </body>
