@@ -1,39 +1,3 @@
-/* ===========================
-   IMPORTS
-=========================== */
-import { auth, db, storage } from "./firebase.js";
-
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  sendPasswordResetEmail
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-  doc,
-  setDoc,
-  getDoc,
-  collection,
-  getDocs,
-  query,
-  orderBy,
-  addDoc,
-  serverTimestamp,
-  updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-/* ===========================
-   REGISTRATION (AUTO ADMIN)
-=========================== */
-export async function registerUser(username, email, password) {
   if (!username || !email || !password) throw new Error("All fields are required");
 
   // create auth user
@@ -201,4 +165,41 @@ export async function addCourse(data) {
     ...data,
     createdAt: serverTimestamp()
   });
+}
+
+// ===========================
+// DOM wrappers (expose to window so inline onclick works)
+// ===========================
+if (typeof window !== "undefined") {
+  // wrapper that calls the exported loginUser(email,password)
+  window.loginUser = async () => {
+    const email = document.getElementById("loginEmail")?.value?.trim();
+    const password = document.getElementById("loginPassword")?.value;
+    if (!email || !password) return alert("Email and password required");
+    try {
+      const res = await loginUser(email, password); // module function
+      // redirect based on role (adjust targets as needed)
+      if (res.role === "admin") {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "index.html";
+      }
+    } catch (err) {
+      alert(err?.message || String(err));
+      console.error(err);
+    }
+  };
+
+  // wrapper for forgot password
+  window.forgotPassword = async () => {
+    const email = document.getElementById("loginEmail")?.value?.trim();
+    if (!email) return alert("Enter your email to reset password");
+    try {
+      await forgotPassword(email); // module function
+      alert("Password reset email sent");
+    } catch (err) {
+      alert(err?.message || String(err));
+      console.error(err);
+    }
+  };
 }
