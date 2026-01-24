@@ -1,167 +1,136 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Login | Bitforex Academy</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-  /* Colors & font (keeps your look) */
-  :root{
-    --bg: #0b1220;
-    --card: #1e293b;
-    --muted: #94a3b8;
-    --accent: #22c55e;
-    --text: #ffffff;
-  }
-
-  html,body{height:100%;margin:0}
-  body{
-    margin:0;
-    font-family: Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-  }
-
-  /* container centers card and limits width */
-  .container{
-    width:100%;
-    max-width:420px; /* desktop card width */
-  }
-
-  .card{
-    background: var(--card);
-    padding:28px;
-    border-radius:12px;
-    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
-  }
-
-  h2{
-    margin:0 0 8px 0;
-    font-size:20px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-
-  input{
-    width:100%;
-    padding:12px;
-    border-radius:6px;
-    border:none;
-    background: rgba(255,255,255,0.03);
-    color:var(--text);
-    box-sizing:border-box;
-    outline:none;
-    font-size:15px;
-  }
-
-  .input-group{
-    position:relative;
-    margin-top:12px;
-  }
-
-  .eye{
-    position:absolute;
-    right:12px;
-    top:50%;
-    transform:translateY(-50%);
-    cursor:pointer;
-    color:var(--muted);
-    user-select:none;
-  }
-
-  button{
-    width:100%;
-    padding:12px;
-    margin-top:18px;
-    border-radius:6px;
-    border:none;
-    background: var(--accent);
-    color:#042107;
-    font-weight:700;
-    cursor:pointer;
-    font-size:15px;
-  }
-
-  a{
-    color: var(--accent);
-    text-decoration:none;
-    font-size:14px;
-  }
-
-  .small{
-    text-align:right;
-    margin-top:8px;
-    font-size:14px;
-  }
-
-  p{margin-top:18px;font-size:14px;color:var(--muted)}
-
-  /* Responsive adjustments (phone) */
-  @media (max-width:420px){
-    .container{max-width:380px}
-    .card{padding:20px}
-    h2{font-size:18px}
-  }
-
-  /* Slightly larger layout on wide screens */
-  @media (min-width:900px){
-    .container{max-width:520px}
-    .card{padding:36px}
-    h2{font-size:22px}
-    input{font-size:16px}
-    button{font-size:16px}
-  }
-</style>
+  <meta charset="utf-8" />
+  <title>Login | Bitforex Academy</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg: #0b1220;
+      --card: #1e293b;
+      --muted: #94a3b8;
+      --accent: #22c55e;
+      --text: #ffffff;
+    }
+    html,body{height:100%;margin:0}
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .container{width:100%;max-width:420px}
+    .card{
+      background: var(--card);
+      padding:28px;
+      border-radius:12px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+    }
+    h2{margin:0 0 8px 0;font-size:20px;display:flex;align-items:center;gap:8px}
+    input{
+      width:100%;
+      padding:12px;
+      border-radius:6px;
+      border:none;
+      background: rgba(255,255,255,0.03);
+      color:var(--text);
+      box-sizing:border-box;
+      outline:none;
+      font-size:15px;
+      margin-top:12px;
+    }
+    .input-group{position:relative;margin-top:12px}
+    .eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--muted);user-select:none}
+    button{
+      width:100%;
+      padding:12px;
+      margin-top:18px;
+      border-radius:6px;
+      border:none;
+      background: var(--accent);
+      color:#042107;
+      font-weight:700;
+      cursor:pointer;
+      font-size:15px;
+    }
+    a{color: var(--accent);text-decoration:none;font-size:14px}
+    .small{text-align:right;margin-top:8px;font-size:14px}
+    p{margin-top:18px;font-size:14px;color:var(--muted)}
+    .hidden{display:none}
+    /* message styles */
+    .error{color:#ffb4b4}
+    .success{color:#bafdbe}
+    /* Responsive */
+    @media (max-width:420px){
+      .container{max-width:380px}
+      .card{padding:20px}
+      h2{font-size:18px}
+    }
+  </style>
 </head>
-
 <body>
+  <div class="container">
+    <div class="card">
+      <h2>🔐 Login</h2>
 
-<div class="container">
-  <div class="card">
-    <h2>🔐 Login</h2>
+      <!-- login inputs expected by app.js -->
+      <input id="loginEmail" type="email" placeholder="Email" autocomplete="username" />
+      <div class="input-group">
+        <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
+        <span class="eye" id="toggleEye">👁</span>
+      </div>
 
-    <input id="loginEmail" type="email" placeholder="Email">
+      <div class="small">
+        <a href="#" id="forgotLink">Forgot password?</a>
+      </div>
 
-    <div class="input-group">
-      <input id="loginPassword" type="password" placeholder="Password">
-      <span class="eye" onclick="togglePass()">👁</span>
+      <!-- message container -->
+      <div id="login-message" class="hidden" aria-live="polite"></div>
+
+      <!-- Login button: app.js expects either onclick="loginUser()" or will auto-attach -->
+      <button id="login-btn" type="button" data-loading-text="Logging in...">Login</button>
+
+      <p>No account? <a href="register.html">Register</a></p>
     </div>
-
-    <div class="small">
-      <a href="#" onclick="forgotPassword()">Forgot password?</a>
-    </div>
-
-    <button type="button" onclick="loginUser()">Login</button>
-
-    <p>No account? <a href="register.html">Register</a></p>
   </div>
-</div>
 
-<script>
-function togglePass(){
-  const input = document.getElementById("loginPassword");
-  const eye = document.querySelector(".eye");
+  <script>
+    // Keep UI behaviors local and simple:
+    const toggleEye = document.getElementById('toggleEye');
+    toggleEye?.addEventListener('click', () => {
+      const pwd = document.getElementById('loginPassword');
+      if (!pwd) return;
+      if (pwd.type === 'password') {
+        pwd.type = 'text';
+        toggleEye.textContent = '🙈';
+      } else {
+        pwd.type = 'password';
+        toggleEye.textContent = '👁';
+      }
+    });
 
-  if(input.type === "password"){
-    input.type = "text";
-    eye.textContent = "🙈";
-  }else{
-    input.type = "password";
-    eye.textContent = "👁";
-  }
-}
-</script>
+    // Allow inline-style compatibility but prefer event listeners:
+    document.getElementById('forgotLink')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      // app.js exposes window.forgotPassword()
+      if (window.forgotPassword) window.forgotPassword();
+      else alert('Forgot password function not available.');
+    });
 
-<!-- your module; app.js must include the wrapper snippet from above -->
-<script type="module" src="./app.js"></script>
+    // Attach login handler to match updated app.js (works with or without inline onclick)
+    document.getElementById('login-btn')?.addEventListener('click', (e) => {
+      if (window.loginUser) return window.loginUser(e);
+    });
+  </script>
 
+  <!-- Ensure firebase.js (exports auth, db, storage) is present at ./firebase.js -->
+  <!-- app.js must be a module as it imports firebase modules -->
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
