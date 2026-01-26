@@ -6,43 +6,105 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
-/* (UNCHANGED STYLES — SAME AS YOURS) */
+:root{
+  --bg:#0b1220;
+  --card:#1e293b;
+  --muted:#94a3b8;
+  --accent:#22c55e;
+  --text:#ffffff;
+}
+html,body{height:100%;margin:0}
+body{
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.container{width:100%;max-width:420px;padding:20px}
+.card{
+  background:var(--card);
+  padding:28px;
+  border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.4);
+}
+h2{margin-bottom:10px}
+input{
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  border-radius:6px;
+  border:none;
+  background:rgba(255,255,255,.05);
+  color:#fff;
+}
+.input-group{position:relative}
+.eye{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  cursor:pointer;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:18px;
+  border:none;
+  border-radius:6px;
+  background:var(--accent);
+  font-weight:bold;
+  cursor:pointer;
+}
+.message{margin-top:12px;font-size:14px}
+.hidden{display:none}
+.message.error{color:#ffb4b4}
+.message.success{color:#bafdbe}
+.small{text-align:right;margin-top:8px}
+a{color:var(--accent);text-decoration:none;font-size:14px}
 </style>
 </head>
 
 <body>
-  <div class="container">
-    <div class="card">
-      <h2>🔐 Login</h2>
+<div class="container">
+  <div class="card">
+    <h2>🔐 Login</h2>
 
-      <input id="loginEmail" type="email" placeholder="Email" />
-      <div class="input-group">
-        <input id="loginPassword" type="password" placeholder="Password" />
-        <span class="eye" id="toggleEye">👁</span>
-      </div>
-
-      <div class="small">
-        <a href="#" id="forgotLink">Forgot password?</a>
-      </div>
-
-      <div id="login-message" class="message hidden"></div>
-
-      <!-- IMPORTANT: no inline onclick -->
-      <button id="login-btn" type="button">Login</button>
-
-      <p>No account? <a href="register.html">Register</a></p>
+    <input id="loginEmail" type="email" placeholder="Email">
+    <div class="input-group">
+      <input id="loginPassword" type="password" placeholder="Password">
+      <span class="eye" id="toggleEye">👁</span>
     </div>
+
+    <div class="small">
+      <a href="#" id="forgotLink">Forgot password?</a>
+    </div>
+
+    <div id="login-message" class="message hidden"></div>
+
+    <button id="login-btn">Login</button>
+
+    <p>No account? <a href="register.html">Register</a></p>
   </div>
+</div>
 
-  <!-- UI only -->
-  <script>
-    document.getElementById('toggleEye')?.addEventListener('click', () => {
-      const pwd = document.getElementById('loginPassword');
-      pwd.type = pwd.type === 'password' ? 'text' : 'password';
-    });
-  </script>
+<script>
+document.getElementById("toggleEye").onclick=()=>{
+  const p=document.getElementById("loginPassword");
+  p.type=p.type==="password"?"text":"password";
+};
+document.getElementById("login-btn").onclick=(e)=>{
+  if(window.loginUser) window.loginUser(e);
+};
+document.getElementById("forgotLink").onclick=(e)=>{
+  e.preventDefault();
+  if(window.forgotPassword) window.forgotPassword(e);
+};
+</script>
 
-  <!-- APP LOGIC -->
-  <script type="module" src="./app.js"></script>
+<!-- 🔥 CRITICAL ORDER -->
+<script type="module" src="firebase.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
