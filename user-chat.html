@@ -1,169 +1,125 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>User Chat | Bitforex Academy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>User Chat | BiTForeX Academy</title>
 
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#0b1220;color:#fff;height:100vh;overflow:hidden;}
-.navbar{position:fixed;top:0;width:100%;height:70px;background:#020617;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:10;}
-.brand{display:flex;align-items:center;gap:10px;}
-.logo-circle img{width:38px;height:38px;border-radius:50%;}
-.logo-text{font-weight:bold;color:#22c55e;}
-.nav a{color:#94a3b8;text-decoration:none;margin-left:15px;font-size:14px;}
-.nav a.active{color:#22c55e;font-weight:bold;}
-.container{position:fixed;top:70px;bottom:0;left:0;right:0;padding:15px;display:flex;flex-direction:column;}
-.chat-header{padding:12px;border-bottom:1px solid #1e293b;font-weight:bold;color:#22c55e;}
-.messages{flex:1;padding:15px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;}
-.msg{max-width:70%;padding:10px;border-radius:10px;word-wrap:break-word;}
-.msg.user{background:#22c55e;color:#000;margin-left:auto;}
-.msg.admin{background:#1e293b;color:#fff;}
-.msg img{max-width:100%;border-radius:8px;margin-top:6px;}
-.chat-input{display:flex;align-items:center;gap:8px;padding:10px;border-top:1px solid #1e293b;}
-.chat-input input[type="text"]{flex:1;padding:10px;border-radius:8px;border:none;outline:none;}
-.emoji-btn{background:#0b1220;border:none;padding:10px;border-radius:8px;cursor:pointer;color:#fff;}
-.btn{background:#22c55e;border:none;padding:10px 16px;border-radius:8px;font-weight:bold;cursor:pointer;color:#000;}
-.btn:disabled,.emoji-btn:disabled,.chat-input input:disabled{opacity:.5;cursor:not-allowed;}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0b1220;
+  color:#fff;
+  height:100vh;
+  overflow:hidden;
+}
+.topbar{
+  background:#020617;
+  padding:15px;
+  border-bottom:1px solid #1e293b;
+  font-weight:bold;
+}
+.chat{
+  height:calc(100vh - 140px);
+  overflow-y:auto;
+  padding:15px;
+}
+.msg{
+  background:#1e293b;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  max-width:75%;
+  word-wrap:break-word;
+}
+.msg.user{
+  background:#22c55e;
+  color:#000;
+  margin-left:auto;
+}
+.msg.admin{
+  background:#334155;
+}
+.msg img{
+  max-width:100%;
+  border-radius:8px;
+  margin-top:6px;
+}
+.input-box{
+  position:fixed;
+  bottom:60px;
+  width:100%;
+  display:flex;
+  gap:6px;
+  background:#020617;
+  padding:10px;
+}
+.input-box input[type="text"]{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:6px;
+}
+.input-box button{
+  background:#22c55e;
+  border:none;
+  padding:10px 14px;
+  border-radius:6px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  height:60px;
+  background:#020617;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  border-top:1px solid #1e293b;
+}
+.bottom-nav a{
+  color:#22c55e;
+  text-decoration:none;
+  text-align:center;
+  font-size:12px;
+}
 </style>
 </head>
 
 <body>
-<header class="navbar">
-  <div class="brand">
-    <div class="logo-circle"><img src="logo.jpg" alt="logo"></div>
-    <span class="logo-text">BiTForeX User</span>
-  </div>
-  <nav class="nav">
-    <a href="user-dashboard.html">Dashboard</a>
-    <a href="user-courses.html">Courses</a>
-    <a href="user-subscriptions.html">Subscriptions</a>
-    <a href="user-chat.html" class="active">Messages</a>
-    <a href="login.html" id="logout-user">Logout</a>
-  </nav>
-</header>
 
-<main class="container">
-  <div class="chat-header" id="chatTitle">Admin</div>
-  <div class="messages" id="userMessages"></div>
+<div class="topbar">💬 Chat with Admin</div>
 
-  <div class="chat-input">
-    <input type="text" id="userMessageInput" placeholder="Type message…" disabled>
-    <input type="file" id="userFileInput" accept="image/*" hidden>
-    <button id="userFileBtn" class="emoji-btn" disabled>📎</button>
-    <button id="userSendBtn" class="btn" disabled>Send</button>
-  </div>
-</main>
+<div class="chat" id="chatBox">
+  <!-- messages load here -->
+</div>
 
-<script type="module">
-import { auth, db, storage } from "./firebase.js";
-import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+<div class="input-box">
+  <!-- image -->
+  <label>
+    <button type="button">📷</button>
+    <input type="file" id="imageInput" accept="image/*" hidden>
+  </label>
 
-import {
-  collection,
-  addDoc,
-  doc,
-  updateDoc,
-  serverTimestamp,
-  onSnapshot,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <!-- text -->
+  <input id="messageInput" type="text" placeholder="Type message...">
 
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+  <!-- send -->
+  <button id="sendBtn" type="button">Send</button>
+</div>
 
-const msgBox = document.getElementById("userMessages");
-const msgInput = document.getElementById("userMessageInput");
-const sendBtn = document.getElementById("userSendBtn");
-const fileInput = document.getElementById("userFileInput");
-const fileBtn = document.getElementById("userFileBtn");
-let adminId = null;
-let unsubscribeMessages = null;
+<div class="bottom-nav">
+  <a href="user-chat.html">💬<br>Chat</a>
+  <a href="user-subscription.html">💳<br>Subs</a>
+  <a href="user-courses.html">📘<br>Courses</a>
+  <a href="user-settings.html">⚙️<br>Settings</a>
+</div>
 
-// Ensure user is logged in
-onAuthStateChanged(auth, async user => {
-  if(!user) return location.href="login.html";
+<!-- APP LOGIC ONLY -->
+<script type="module" src="app.js"></script>
 
-  // fetch admin user
-  const snap = await getSnapshot(collection(db,"users"));
-  snap.forEach(d=>{
-    const u = d.data();
-    if(u.role==="admin") adminId = d.id;
-  });
-
-  if(!adminId) return alert("No admin found");
-
-  msgInput.disabled=false;
-  sendBtn.disabled=false;
-  fileBtn.disabled=false;
-
-  // Listen to messages
-  const q = query(collection(db,"messages"),orderBy("createdAt"));
-  unsubscribeMessages = onSnapshot(q,snap=>{
-    msgBox.innerHTML="";
-    snap.forEach(d=>{
-      const m = d.data();
-      if((m.senderId===user.uid && m.receiverId===adminId) ||
-         (m.senderId===adminId && m.receiverId===user.uid)){
-        const div = document.createElement("div");
-        div.textContent = m.text||"";
-        div.className = m.senderId===user.uid?"msg user":"msg admin";
-        if(m.imageUrl){
-          const img = document.createElement("img");
-          img.src = m.imageUrl;
-          div.appendChild(img);
-        }
-        msgBox.appendChild(div);
-        msgBox.scrollTop=msgBox.scrollHeight;
-      }
-    });
-  });
-});
-
-// Send message
-sendBtn.addEventListener("click",async()=>{
-  const text = msgInput.value.trim();
-  if(!text || !auth.currentUser || !adminId) return;
-  await addDoc(collection(db,"messages"),{
-    senderId:auth.currentUser.uid,
-    receiverId:adminId,
-    text,
-    imageUrl:null,
-    createdAt:serverTimestamp()
-  });
-  msgInput.value="";
-});
-
-// Send image
-fileBtn.addEventListener("click",()=> fileInput.click());
-fileInput.addEventListener("change",async()=>{
-  const file = fileInput.files?.[0];
-  if(!file || !auth.currentUser || !adminId) return;
-  const storageRef = ref(storage,`chat/${Date.now()}_${file.name}`);
-  await uploadBytes(storageRef,file);
-  const url = await getDownloadURL(storageRef);
-
-  await addDoc(collection(db,"messages"),{
-    senderId:auth.currentUser.uid,
-    receiverId:adminId,
-    text:null,
-    imageUrl:url,
-    createdAt:serverTimestamp()
-  });
-
-  fileInput.value="";
-});
-
-// Logout
-document.getElementById("logout-user").addEventListener("click", async()=>{
-  if(auth.currentUser) {
-    await updateDoc(doc(db,"users",auth.currentUser.uid),{online:false});
-  }
-  location.href="login.html";
-});
-</script>
-<script type="module" src="firebase.js"></script>
 </body>
 </html>
