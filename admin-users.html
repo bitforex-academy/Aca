@@ -35,16 +35,20 @@ body{
   background:#020617;
   border:1px solid #1e293b;
   border-radius:12px;
-  padding:12px;
-  margin-bottom:10px;
+  padding:14px;
+  margin-bottom:12px;
+}
+.user-name{
+  font-weight:bold;
+  font-size:15px;
 }
 .status{
   font-size:13px;
+  margin-top:4px;
   color:#22c55e;
 }
 .inactive{ color:#ef4444; }
 
-/* subscription badge */
 .badge{
   display:inline-block;
   padding:4px 10px;
@@ -62,11 +66,10 @@ body{
   color:#fff;
 }
 
-/* buttons */
 .card-actions{
-  margin-top:10px;
+  margin-top:12px;
   display:flex;
-  gap:8px;
+  gap:10px;
 }
 .card-actions button{
   flex:1;
@@ -76,10 +79,16 @@ body{
   cursor:pointer;
   font-weight:bold;
 }
-.view-btn{ background:#1e293b; color:#fff; }
-.msg-btn{ background:#22c55e; color:#000; }
+.view-btn{
+  background:#1e293b;
+  color:#fff;
+}
+.msg-btn{
+  background:#22c55e;
+  color:#000;
+}
 
-/* modal */
+/* MODAL */
 .modal-overlay{
   position:fixed;
   inset:0;
@@ -97,8 +106,7 @@ body{
   width:90%;
   max-width:400px;
 }
-.modal h3{ margin-top:0 }
-.modal p{ margin:8px 0; font-size:14px }
+.modal h3{margin-top:0}
 
 /* bottom nav */
 .bottom-nav{
@@ -137,20 +145,29 @@ body{
 </div>
 
 <div class="users" id="usersList">
-  <!-- USER CARDS LOAD HERE -->
+
+  <!-- SAMPLE CARD (script will clone this structure) -->
+  <!-- DO NOT REMOVE -->
+  <div class="user-card" style="display:none" id="userTemplate">
+    <div class="user-name">Username</div>
+    <div class="status">Online</div>
+    <div class="badge unsubscribed">Not Subscribed</div>
+
+    <div class="card-actions">
+      <button class="view-btn">View User</button>
+      <button class="msg-btn">Message</button>
+    </div>
+  </div>
+
 </div>
 
-<!-- USER DETAILS MODAL -->
+<!-- USER MODAL -->
 <div class="modal-overlay" id="userModal">
   <div class="modal">
-    <h3 id="modalName">User</h3>
+    <h3 id="modalName"></h3>
     <p><b>Email:</b> <span id="modalEmail"></span></p>
-    <p><b>Status:</b> <span id="modalOnline"></span></p>
+    <p><b>Status:</b> <span id="modalStatus"></span></p>
     <p><b>Subscription:</b> <span id="modalSub"></span></p>
-
-    <button class="msg-btn" style="margin-top:12px" id="modalMessageBtn">
-      Send Message
-    </button>
   </div>
 </div>
 
@@ -162,27 +179,20 @@ body{
   <a href="admin-settings.html" class="nav-item"><span>⚙️</span>Settings</a>
 </div>
 
-<!-- modal logic only -->
 <script>
 const modal = document.getElementById("userModal");
 
-window.openUserModal = function(user){
-  document.getElementById("modalName").textContent = user.username || "User";
-  document.getElementById("modalEmail").textContent = user.email;
-  document.getElementById("modalOnline").textContent = user.online ? "Online" : "Offline";
-  document.getElementById("modalSub").textContent =
-    user.subscription ? "Subscribed" : "Not Subscribed";
-
-  document.getElementById("modalMessageBtn").onclick = () => {
-    location.href = "admin-chat.html?uid=" + user.uid;
-  };
-
-  modal.style.display = "flex";
+window.openUserModal = (u)=>{
+  document.getElementById("modalName").textContent = u.username;
+  document.getElementById("modalEmail").textContent = u.email;
+  document.getElementById("modalStatus").textContent = u.online ? "Online" : "Offline";
+  document.getElementById("modalSub").textContent = u.subscription ? "Subscribed" : "Not Subscribed";
+  modal.style.display="flex";
 };
 
-modal.addEventListener("click", e => {
-  if (e.target === modal) modal.style.display = "none";
-});
+modal.onclick = e=>{
+  if(e.target===modal) modal.style.display="none";
+};
 </script>
 
 <script type="module" src="firebase.js"></script>
