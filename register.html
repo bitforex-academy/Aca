@@ -1,34 +1,87 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+<meta charset="UTF-8">
 <title>Register | Bitforex Academy</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-/* (UNCHANGED STYLES — SAME AS YOURS) */
+:root{
+  --bg:#0b1220;
+  --card:#1e293b;
+  --accent:#22c55e;
+  --text:#ffffff;
+}
+html,body{height:100%;margin:0}
+body{
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.container{width:100%;max-width:420px;padding:20px}
+.card{
+  background:var(--card);
+  padding:28px;
+  border-radius:12px;
+  box-shadow:0 8px 30px rgba(0,0,0,.4);
+}
+h2{margin-bottom:10px}
+input{
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  border-radius:6px;
+  border:none;
+  background:rgba(255,255,255,.05);
+  color:#fff;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:18px;
+  border:none;
+  border-radius:6px;
+  background:var(--accent);
+  font-weight:bold;
+  cursor:pointer;
+}
+.hidden{display:none}
+#register-message{margin-top:12px;font-size:14px}
+.success{color:#bafdbe}
+.error{color:#ffb4b4}
+a{color:var(--accent);text-decoration:none}
 </style>
 </head>
 
 <body>
-  <div class="container">
-    <div class="card">
-      <h2>📝 Register</h2>
+<div class="container">
+  <div class="card">
+    <h2>📝 Register</h2>
 
-      <input id="regUsername" type="text" placeholder="Username" />
-      <input id="regEmail" type="email" placeholder="Email" />
-      <input id="regPassword" type="password" placeholder="Password" />
-      <input id="regConfirmPassword" type="password" placeholder="Confirm Password" />
+    <input id="regUsername" placeholder="Username">
+    <input id="regEmail" type="email" placeholder="Email">
+    <input id="regPassword" type="password" placeholder="Password">
+    <input id="regConfirmPassword" type="password" placeholder="Confirm Password">
 
-      <div id="register-message" class="hidden"></div>
+    <div id="register-message" class="hidden"></div>
 
-      <!-- NO inline onclick -->
-      <button id="register-btn" type="button">Create account</button>
+    <button id="register-btn">Create Account</button>
 
-      <p>Already have an account? <a href="login.html">Login</a></p>
-    </div>
+    <p>Already have an account? <a href="login.html">Login</a></p>
   </div>
+</div>
 
-  <script type="module" src="./app.js"></script>
+<script>
+document.getElementById("register-btn").onclick=(e)=>{
+  if(window.registerUser) window.registerUser(e);
+};
+</script>
+
+<!-- 🔥 CRITICAL ORDER -->
+<script type="module" src="firebase.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
