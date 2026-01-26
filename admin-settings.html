@@ -38,9 +38,7 @@ body{
   padding:15px;
   margin-bottom:15px;
 }
-.section h4{
-  margin-top:0;
-}
+.section h4{margin-top:0}
 input{
   width:100%;
   padding:10px;
@@ -60,6 +58,7 @@ input{
   background:#22c55e;
   color:#000;
   font-weight:bold;
+  cursor:pointer;
 }
 .logout{
   background:#ef4444;
@@ -70,8 +69,8 @@ input{
   border-radius:10px;
   font-size:16px;
   font-weight:bold;
+  cursor:pointer;
 }
-/* Bottom nav */
 .bottom-nav{
   position:fixed;
   bottom:0;
@@ -109,22 +108,19 @@ input{
 
 <div class="settings">
 
-  <!-- Change Email -->
   <div class="section">
     <h4>Change Email</h4>
     <input id="newEmail" type="email" placeholder="New email address">
-    <button class="submit-btn" onclick="updateEmail()">Update Email</button>
+    <button class="submit-btn" onclick="updateAdminEmail()">Update Email</button>
   </div>
 
-  <!-- Change Password -->
   <div class="section">
     <h4>Change Password</h4>
     <input id="newPassword" type="password" placeholder="New password">
-    <button class="submit-btn" onclick="updatePassword()">Update Password</button>
+    <button class="submit-btn" onclick="updateAdminPassword()">Update Password</button>
   </div>
 
-  <!-- Logout -->
-  <button class="logout" onclick="logout()">Log Out</button>
+  <button class="logout" onclick="logoutUser()">Log Out</button>
 
 </div>
 
@@ -132,39 +128,13 @@ input{
   <a href="admin-dashboard.html" class="nav-item"><span>🏠</span>Home</a>
   <a href="admin-users.html" class="nav-item"><span>👥</span>Users</a>
   <a href="admin-payments.html" class="nav-item"><span>💳</span>Payments</a>
-  <a href="admin-messages.html" class="nav-item"><span>💬</span>Messages</a>
+  <a href="admin-chat.html" class="nav-item"><span>💬</span>Messages</a>
   <a href="admin-settings.html" class="nav-item active"><span>⚙️</span>Settings</a>
 </div>
 
-<script>
-    <script type="module" src="firebase.js"></script>
+<!-- Firebase & App -->
+<script type="module" src="firebase.js"></script>
 <script type="module" src="app.js"></script>
-
-// Load admin details from localStorage
-const adminData = JSON.parse(localStorage.getItem("adminData")) || { email: "", password: "" };
-
-function updateEmail() {
-  const newEmail = document.getElementById("newEmail").value.trim();
-  if (!newEmail) return alert("Please enter a valid email.");
-  adminData.email = newEmail;
-  localStorage.setItem("adminData", JSON.stringify(adminData));
-  alert("✅ Email updated successfully!");
-}
-
-function updatePassword() {
-  const newPassword = document.getElementById("newPassword").value.trim();
-  if (!newPassword) return alert("Please enter a new password.");
-  adminData.password = newPassword;
-  localStorage.setItem("adminData", JSON.stringify(adminData));
-  alert("✅ Password updated successfully!");
-}
-
-function logout() {
-  localStorage.removeItem("isAdminLoggedIn");
-  alert("You’ve been logged out.");
-  window.location.href = "login.html";
-}
-</script>
 
 </body>
 </html>
