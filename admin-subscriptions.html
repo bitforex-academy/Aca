@@ -2,184 +2,112 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Payments</title>
+<title>Admin | Subscription Plans</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0b1220;
-  color:#fff;
-  height:100vh;
-  overflow:hidden;
-}
-.topbar{
-  height:60px;
-  padding:15px;
-  background:#020617;
-  border-bottom:1px solid #1e293b;
-  display:flex;
-  align-items:center;
-}
-.content{
-  position:fixed;
-  top:60px;
-  bottom:70px;
-  left:0;
-  right:0;
-  overflow-y:auto;
-  padding:15px;
-}
-.card{
-  background:#020617;
-  border:1px solid #1e293b;
-  border-radius:12px;
-  padding:15px;
-  margin-bottom:12px;
-}
-.verify-btn{
-  margin-top:10px;
-  width:100%;
-  padding:10px;
-  background:#22c55e;
-  border:none;
-  border-radius:8px;
-  font-weight:bold;
-}
-
-/* MODAL */
-.modal{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,.7);
-  display:none;
-  justify-content:center;
-  align-items:center;
-}
-.modal-box{
-  background:#020617;
-  width:90%;
-  max-width:400px;
-  border-radius:12px;
-  padding:15px;
-}
-.modal img{
-  width:100%;
-  border-radius:8px;
-  margin-top:10px;
-}
-.modal-actions{
-  display:flex;
-  gap:10px;
-  margin-top:15px;
-}
-.approve{
-  flex:1;
-  background:#22c55e;
-  border:none;
-  padding:10px;
-  border-radius:8px;
-  font-weight:bold;
-}
-.reject{
-  flex:1;
-  background:#ef4444;
-  border:none;
-  padding:10px;
-  border-radius:8px;
-  font-weight:bold;
-  color:#fff;
-}
-.close{
-  margin-top:10px;
-  text-align:center;
-  color:#94a3b8;
-  cursor:pointer;
-}
-
-/* bottom nav */
-.bottom-nav{
-  position:fixed;
-  bottom:0;
-  width:100%;
-  height:70px;
-  background:#020617;
-  border-top:1px solid #1e293b;
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-}
-.nav-item{
-  text-decoration:none;
-  color:#94a3b8;
-  font-size:12px;
-  text-align:center;
-}
-.nav-item span{
-  display:block;
-  font-size:18px;
-  color:#22c55e;
-}
+body{margin:0;font-family:Arial;background:#0b1220;color:#fff}
+.topbar{height:60px;padding:15px;background:#020617;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
+.add-btn{background:#22c55e;color:#000;border:none;padding:8px 12px;border-radius:8px;font-weight:bold}
+.content{padding:15px;padding-bottom:90px}
+.plan-card{background:#020617;border:1px solid #1e293b;border-radius:12px;padding:15px;margin-bottom:12px}
+.actions{display:flex;gap:10px;margin-top:10px}
+.edit{flex:1;background:#0ea5e9;border:none;padding:8px;border-radius:8px;font-weight:bold}
+.delete{flex:1;background:#ef4444;border:none;padding:8px;border-radius:8px;font-weight:bold;color:#fff}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
+.modal-box{background:#020617;padding:20px;border-radius:12px;width:90%;max-width:400px}
+input{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:none;background:#0b1220;color:#fff}
+.save{margin-top:15px;width:100%;padding:10px;border:none;border-radius:8px;background:#22c55e;font-weight:bold}
+.bottom-nav{position:fixed;bottom:0;width:100%;height:70px;background:#020617;border-top:1px solid #1e293b;display:flex;justify-content:space-around;align-items:center}
+.nav-item{text-decoration:none;color:#94a3b8;font-size:12px;text-align:center}
+.nav-item span{display:block;font-size:18px;color:#22c55e}
 </style>
 </head>
 
 <body>
 
 <div class="topbar">
-  <h3>Payment Requests</h3>
+  <h3>Subscription Plans</h3>
+  <button class="add-btn" onclick="openPlan()">+ Add Plan</button>
 </div>
 
-<div class="content">
+<div class="content" id="plansBox"></div>
 
-  <div class="card">
-    <b>User:</b> John Doe<br>
-    <b>Plan:</b> Monthly<br>
-    <b>Amount:</b> ₦10,000
-    <button class="verify-btn"
-      onclick="openPaymentModal(
-        'John Doe',
-        'Monthly',
-        '₦10,000',
-        'proof.jpg'
-      )">
-      View / Verify
-    </button>
-  </div>
-
-</div>
-
-<!-- MODAL -->
-<div class="modal" id="paymentModal">
+<div class="modal" id="planModal">
   <div class="modal-box">
-    <h4>Payment Verification</h4>
-
-    <p><b>User:</b> <span id="mUser"></span></p>
-    <p><b>Plan:</b> <span id="mPlan"></span></p>
-    <p><b>Amount:</b> <span id="mAmount"></span></p>
-
-    <img id="mProof" src="" alt="Payment Proof">
-
-    <div class="modal-actions">
-      <button class="approve" onclick="approvePayment()">Approve</button>
-      <button class="reject" onclick="rejectPayment()">Reject</button>
-    </div>
-
-    <div class="close" onclick="closePaymentModal()">Close</div>
+    <h4 id="planTitle">Add Plan</h4>
+    <input id="planName" placeholder="Plan name">
+    <input id="planPrice" placeholder="Price">
+    <input id="planDuration" placeholder="Duration">
+    <button class="save" onclick="savePlan()">Save</button>
   </div>
 </div>
 
 <div class="bottom-nav">
   <a href="admin-dashboard.html" class="nav-item"><span>🏠</span>Home</a>
-  <a href="admin-payments.html" class="nav-item"><span>💳</span>Payments</a>
+  <a href="admin-subscriptions.html" class="nav-item"><span>📦</span>Plans</a>
+  <a href="admin-courses.html" class="nav-item"><span>🎓</span>Courses</a>
   <a href="admin-settings.html" class="nav-item"><span>⚙️</span>Settings</a>
 </div>
 
-<script type="module" src="firebase.js"></script>
-<script type="module" src="app.js"></script>
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+let editId = null;
+const box = document.getElementById("plansBox");
+
+window.openPlan = () => {
+  editId=null;
+  planModal.style.display="flex";
+};
+
+window.savePlan = async ()=>{
+  const name=planName.value.trim();
+  const price=planPrice.value.trim();
+  const duration=planDuration.value.trim();
+  if(!name||!price||!duration) return alert("All fields required");
+
+  if(editId){
+    await updateDoc(doc(db,"plans",editId),{name,price,duration});
+  }else{
+    await addDoc(collection(db,"plans"),{name,price,duration});
+  }
+  planModal.style.display="none";
+  loadPlans();
+};
+
+async function loadPlans(){
+  box.innerHTML="";
+  const snap=await getDocs(collection(db,"plans"));
+  snap.forEach(d=>{
+    const p=d.data();
+    box.innerHTML+=`
+      <div class="plan-card">
+        <b>${p.name}</b><br>
+        ₦${p.price} - ${p.duration}
+        <div class="actions">
+          <button class="edit" onclick="editPlan('${d.id}','${p.name}','${p.price}','${p.duration}')">Edit</button>
+          <button class="delete" onclick="removePlan('${d.id}')">Delete</button>
+        </div>
+      </div>`;
+  });
+}
+
+window.editPlan=(id,n,p,d)=>{
+  editId=id;
+  planName.value=n;
+  planPrice.value=p;
+  planDuration.value=d;
+  planModal.style.display="flex";
+};
+
+window.removePlan=async(id)=>{
+  await deleteDoc(doc(db,"plans",id));
+  loadPlans();
+};
+
+loadPlans();
+</script>
 </body>
 </html>
