@@ -1,11 +1,11 @@
 // ============================
-// app.js – Bitforex Academy
-// Firebase v10.12.2
+// app.js - Full Admin + User Auth + Chat
+// Compatible with Firebase v10.12.2
 // ============================
 
-import { auth, db } from "./firebase.js";
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
+  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
@@ -16,191 +16,242 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
+  getFirestore,
   doc,
   setDoc,
   getDoc,
-  updateDoc,
+  getDocs,
   collection,
   addDoc,
-  getDocs,
-  serverTimestamp
+  updateDoc,
+  query,
+  orderBy,
+  serverTimestamp,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* =========================
-   HELPERS
-========================= */
-const $ = id => document.getElementById(id);
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-function msg(el, text, type = "error") {
-  if (!el) return;
-  el.textContent = text;
-  el.className = type;
-  el.style.display = "block";
+// ============================
+// Firebase Config
+// ============================
+const firebaseConfig = {
+  apiKey: "AIzaSyBhClpR0zHg4XYyTsDupLkmDIp_EkIzHEE",
+  authDomain: "bitforex-academy-3a8f4.firebaseapp.com",
+  projectId: "bitforex-academy-3a8f4",
+  storageBucket: "bitforex-academy-3a8f4.appspot.com",
+  messagingSenderId: "659879098852",
+  appId: "1:659879098852:web:16545b1980e2ed284a6ff1"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// ============================
+// Helper Functions
+// ============================
+function $id(id) { return document.getElementById(id); }
+function getInputValue(el) { return el?.value?.trim() || ""; }
+function showMessage(container, text, type = "error") {
+  if (!container) return;
+  container.textContent = text;
+  container.classList.remove("hidden", "error", "success");
+  container.classList.add(type);
+  container.style.color = type === "error" ? "#ffb4b4" : "#bafdbe";
+}
+function clearMessage(container) {
+  if (!container) return;
+  container.textContent = "";
+  container.classList.add("hidden");
+}
+function setLoading(btn, loading, text = "Loading...") {
+  if (!btn) return;
+  if (loading) {
+    btn.dataset.origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = text;
+    btn.classList.add("loading");
+  } else {
+    btn.disabled = false;
+    btn.textContent = btn.dataset.origText || btn.textContent;
+    btn.classList.remove("loading");
+  }
 }
 
-/* =========================
-   REGISTER
-========================= */
-window.registerUser = async () => {
-  const email = $("regEmail")?.value.trim();
-  const pass = $("regPassword")?.value.trim();
-  const confirm = $("regConfirmPassword")?.value.trim();
-  const username = $("regUsername")?.value.trim();
-  const box = $("register-message");
+// ============================
+// Registration
+// ============================
+window.registerUser = async function () {
+  const msg = $id("register-message");
+  clearMessage(msg);
 
-  if (!email || !pass) return msg(box, "Missing fields");
-  if (pass !== confirm) return msg(box, "Passwords do not match");
+  const username = getInputValue($id("regUsername"));
+  const email = getInputValue($id("regEmail"));
+  const password = getInputValue($id("regPassword"));
+  const confirm = getInputValue($id("regConfirmPassword"));
+  const btn = $id("register-btn");
+
+  if (!email) return showMessage(msg, "Email required");
+  if (!password) return showMessage(msg, "Password required");
+  if (password !== confirm) return showMessage(msg, "Passwords do not match");
 
   try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    setLoading(btn, true, "Creating account...");
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const user = cred.user;
 
-    await setDoc(doc(db, "users", cred.user.uid), {
+    // Determine if admin
+    const adminMeta = doc(db, "meta", "admin");
+    const metaSnap = await getDoc(adminMeta);
+    let role = "user";
+    if (!metaSnap.exists()) {
+      role = "admin";
+      await setDoc(adminMeta, { created: true, admins: [user.uid] });
+    }
+
+    // Create user document
+    await setDoc(doc(db, "users", user.uid), {
       username: username || email.split("@")[0],
       email,
-      role: "user",
-      courses: [],
-      subscription: null,
+      role,
       online: true,
       createdAt: serverTimestamp()
     });
 
-    msg(box, "Account created. Redirecting…", "success");
-    setTimeout(() => location.href = "login.html", 800);
-
-  } catch (e) {
-    msg(box, e.message);
+    showMessage(msg, "Account created. Redirecting to login...", "success");
+    setTimeout(() => location.href = "login.html", 1000);
+  } catch (err) {
+    console.error(err);
+    showMessage(msg, err.code === "auth/email-already-in-use" ? "Email already in use" : err.message, "error");
+  } finally {
+    setLoading(btn, false);
   }
 };
 
-/* =========================
-   LOGIN
-========================= */
-window.loginUser = async () => {
-  const email = $("loginEmail")?.value.trim();
-  const pass = $("loginPassword")?.value.trim();
-  const box = $("login-message");
+// ============================
+// Login
+// ============================
+window.loginUser = async function () {
+  const msg = $id("login-message");
+  clearMessage(msg);
 
-  if (!email || !pass) return msg(box, "Missing fields");
+  const email = getInputValue($id("loginEmail"));
+  const password = getInputValue($id("loginPassword"));
+  const btn = $id("login-btn");
+
+  if (!email) return showMessage(msg, "Enter email");
+  if (!password) return showMessage(msg, "Enter password");
 
   try {
-    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    setLoading(btn, true, "Logging in...");
+    const cred = await signInWithEmailAndPassword(auth, email, password);
     const snap = await getDoc(doc(db, "users", cred.user.uid));
+    if (!snap.exists()) return showMessage(msg, "User data not found", "error");
 
-    if (!snap.exists()) throw "User record missing";
-
-    const role = snap.data().role;
-
+    // Update online status
     await updateDoc(doc(db, "users", cred.user.uid), { online: true });
 
+    const role = snap.data().role;
     if (role === "admin") location.href = "admin-dashboard.html";
-    else location.href = "user-dashboard.html";
-
-  } catch (e) {
-    msg(box, "Login failed");
+    else location.href = "user-chat.html";
+  } catch (err) {
+    console.error(err);
+    showMessage(msg, "Login failed: " + err.message, "error");
+  } finally {
+    setLoading(btn, false);
   }
 };
 
-/* =========================
-   LOGOUT
-========================= */
-window.logoutUser = async () => {
-  if (auth.currentUser) {
-    await updateDoc(doc(db, "users", auth.currentUser.uid), { online: false });
-    await signOut(auth);
-  }
+// ============================
+// Logout
+// ============================
+window.logoutUser = async function () {
+  const user = auth.currentUser;
+  if (user) await updateDoc(doc(db, "users", user.uid), { online: false });
+  await signOut(auth);
   location.href = "login.html";
 };
 
-/* =========================
-   PASSWORD RESET
-========================= */
-window.forgotPassword = async () => {
-  const email = $("loginEmail")?.value.trim() || prompt("Enter email");
+// ============================
+// Forgot Password
+// ============================
+window.forgotPassword = async function () {
+  let email = getInputValue($id("loginEmail")) || prompt("Enter your email:");
   if (!email) return;
-  await sendPasswordResetEmail(auth, email);
-  alert("Reset email sent");
+  try { await sendPasswordResetEmail(auth, email); alert("Password reset email sent"); }
+  catch (err) { console.error(err); alert("Failed to send reset email"); }
 };
 
-/* =========================
-   AUTH GUARD
-========================= */
-onAuthStateChanged(auth, async user => {
+// ============================
+// Admin Auth Guard
+// ============================
+onAuthStateChanged(auth, async (user) => {
   if (!user) return;
-  await updateDoc(doc(db, "users", user.uid), { online: true });
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (!snap.exists()) return;
+  const role = snap.data().role;
+  if (location.pathname.includes("admin") && role !== "admin") location.href = "user-chat.html";
 });
 
-/* =========================
-   ADMIN – COURSES
-========================= */
-window.addCourse = async () => {
-  const title = $("courseTitle")?.value.trim();
-  const desc = $("courseDesc")?.value.trim();
-  const price = $("coursePrice")?.value.trim();
+// ============================
+// Toggle Password Visibility
+// ============================
+window.togglePassword = function(inputId, btnId){
+  const input = $id(inputId);
+  if (!input) return;
+  if(input.type === "password") input.type = "text";
+  else input.type = "password";
+};
 
-  if (!title) return alert("Missing title");
+// ============================
+// ADMIN CHAT EXAMPLE (simplified)
+// ============================
+let activeUserId = null;
+let unsubscribeMessages = null;
+const messagesBox = $id("adminMessages");
+const msgInput = $id("adminMessageInput");
+const sendBtn = $id("adminSendBtn");
 
-  await addDoc(collection(db, "courses"), {
-    title,
-    description: desc,
-    price,
+window.openChat = function(uid, username){
+  activeUserId = uid;
+  $id("adminChatTitle").textContent = username;
+  messagesBox.innerHTML = "";
+
+  if(typeof unsubscribeMessages === "function") unsubscribeMessages();
+
+  const q = query(collection(db, "messages"), orderBy("createdAt"));
+  unsubscribeMessages = onSnapshot(q, snap => {
+    messagesBox.innerHTML = "";
+    snap.forEach(d=>{
+      const m = d.data();
+      const me = auth.currentUser?.uid;
+      if((m.senderId===me && m.receiverId===uid)||(m.senderId===uid && m.receiverId===me)){
+        const div = document.createElement("div");
+        div.textContent = m.text || "";
+        if(m.senderId === me) div.className = "msg admin";
+        else div.className = "msg user";
+        messagesBox.appendChild(div);
+      }
+    });
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  });
+};
+
+sendBtn?.addEventListener("click", async ()=>{
+  const text = getInputValue(msgInput);
+  if(!text || !activeUserId || !auth.currentUser) return;
+  await addDoc(collection(db,"messages"),{
+    senderId: auth.currentUser.uid,
+    receiverId: activeUserId,
+    text,
     createdAt: serverTimestamp()
   });
-
-  alert("Course added");
-};
-
-/* =========================
-   ADMIN – ASSIGN COURSE
-========================= */
-window.assignCourseToUser = async (userId, courseId) => {
-  const ref = doc(db, "users", userId);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return alert("User not found");
-
-  const courses = snap.data().courses || [];
-  if (!courses.includes(courseId)) {
-    courses.push(courseId);
-    await updateDoc(ref, { courses });
-  }
-
-  alert("Course assigned");
-};
-
-/* =========================
-   ADMIN – SUBSCRIPTION
-========================= */
-window.assignSubscription = async (userId, plan) => {
-  const ref = doc(db, "users", userId);
-  const expires = new Date();
-
-  if (plan === "monthly") expires.setMonth(expires.getMonth() + 1);
-  if (plan === "yearly") expires.setFullYear(expires.getFullYear() + 1);
-
-  await updateDoc(ref, {
-    subscription: {
-      plan,
-      status: "active",
-      expiresAt: expires
-    }
-  });
-
-  alert("Subscription activated");
-};
-
-/* =========================
-   ADMIN – LOAD USERS
-========================= */
-window.loadUsers = async () => {
-  const list = $("usersList");
-  if (!list) return;
-
-  list.innerHTML = "";
-  const snap = await getDocs(collection(db, "users"));
-
-  snap.forEach(d => {
-    const u = d.data();
-    const li = document.createElement("li");
-    li.textContent = `${u.username} ${u.online ? "🟢" : "⚪"}`;
-    list.appendChild(li);
-  });
-};
+  msgInput.value = "";
+});
