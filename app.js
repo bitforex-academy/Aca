@@ -1,192 +1,246 @@
-// app.js
-import { auth, db } from "./firebase.js";
+// ============================
+// app.js - Full Admin + Auth + Chat
+// ============================
 
+import { auth, db, storage } from "./firebase.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  updateEmail,
+  updatePassword
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  doc, setDoc, getDoc, getDocs,
-  collection, addDoc, updateDoc,
-  query, where, orderBy,
-  serverTimestamp, onSnapshot
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  query,
+  orderBy,
+  serverTimestamp,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ===========================
-   AUTH
-=========================== */
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-// REGISTER
-window.registerUser = async () => {
-  const email = regEmail.value.trim();
-  const pass = regPassword.value;
-  const confirm = regConfirmPassword.value;
-  const username = regUsername.value.trim();
-
-  if (!email || !pass) return alert("Fill all fields");
-  if (pass !== confirm) return alert("Passwords mismatch");
-
-  const cred = await createUserWithEmailAndPassword(auth, email, pass);
-
-  await setDoc(doc(db, "users", cred.user.uid), {
-    email,
-    username,
-    role: "user",
-    online: true,
-    createdAt: serverTimestamp()
-  });
-
-  location.href = "login.html";
-};
-
-// LOGIN
-window.loginUser = async () => {
-  const email = loginEmail.value.trim();
-  const pass = loginPassword.value;
-
-  const cred = await signInWithEmailAndPassword(auth, email, pass);
-  const snap = await getDoc(doc(db, "users", cred.user.uid));
-
-  if (!snap.exists()) return alert("Profile missing");
-
-  const role = snap.data().role;
-  location.href = role === "admin"
-    ? "admin-dashboard.html"
-    : "user-chat.html";
-};
-
-// LOGOUT
-window.logoutUser = async () => {
-  await updateDoc(doc(db, "users", auth.currentUser.uid), { online: false });
-  await signOut(auth);
-  location.href = "login.html";
-};
-
-// ONLINE STATUS
-onAuthStateChanged(auth, user => {
-  if (user) {
-    updateDoc(doc(db, "users", user.uid), { online: true });
+// ============================
+// Helper Functions
+// ============================
+function $id(id){ return document.getElementById(id); }
+function getInputValue(el){ return (el && el.value) ? el.value.trim() : ""; }
+function setLoading(btn, loading, text="Loading..."){
+  if(!btn) return;
+  if(loading){
+    if(!btn.dataset.origText) btn.dataset.origText = btn.textContent || "";
+    btn.disabled = true;
+    btn.textContent = btn.dataset.loadingText || text;
+  } else {
+    if(btn.dataset.origText !== undefined) btn.textContent = btn.dataset.origText;
+    btn.disabled = false;
   }
+}
+
+// ============================
+// Registration
+// ============================
+window.registerUser = async function(){
+  const msg = $id("register-message");
+  const username = getInputValue($id("regUsername"));
+  const email = getInputValue($id("regEmail"));
+  const password = getInputValue($id("regPassword"));
+  const confirm = getInputValue($id("regConfirmPassword"));
+  const btn = $id("register-btn");
+
+  if(!email) return msg.textContent = "Enter email";
+  if(!password) return msg.textContent = "Enter password";
+  if(password !== confirm) return msg.textContent = "Passwords do not match";
+
+  try{
+    setLoading(btn,true);
+    const cred = await createUserWithEmailAndPassword(auth,email,password);
+    const user = cred.user;
+
+    // Set default role & subscription
+    await setDoc(doc(db,"users",user.uid),{
+      username: username || email.split("@")[0],
+      email,
+      role:"user",
+      subscription:null,
+      createdAt:serverTimestamp(),
+      online:false,
+      unreadForAdmin:0
+    });
+
+    msg.textContent = "Account created. Redirecting to login...";
+    setTimeout(()=> location.href="login.html",700);
+  } catch(err){
+    console.error(err);
+    msg.textContent = err.message || "Registration failed";
+  } finally { setLoading(btn,false); }
+}
+
+// ============================
+// Login
+// ============================
+window.loginUser = async function(){
+  const msg = $id("login-message");
+  const email = getInputValue($id("loginEmail"));
+  const password = getInputValue($id("loginPassword"));
+  const btn = $id("login-btn");
+
+  if(!email) return msg.textContent = "Enter email";
+  if(!password) return msg.textContent = "Enter password";
+
+  try{
+    setLoading(btn,true);
+    const cred = await signInWithEmailAndPassword(auth,email,password);
+    const snap = await getDoc(doc(db,"users",cred.user.uid));
+    const userData = snap.exists()? snap.data() : null;
+
+    // Update online status
+    await updateDoc(doc(db,"users",cred.user.uid),{online:true});
+
+    if(userData?.role === "admin") location.href="admin-dashboard.html";
+    else location.href="user-chat.html";
+  } catch(err){
+    console.error(err);
+    msg.textContent = "Login failed: "+(err.message||"");
+  } finally { setLoading(btn,false); }
+}
+
+// ============================
+// Logout
+// ============================
+window.logoutUser = async function(){
+  if(auth.currentUser){
+    await updateDoc(doc(db,"users",auth.currentUser.uid),{online:false});
+    await signOut(auth);
+  }
+  location.href="login.html";
+}
+
+// ============================
+// Auth Guard
+// ============================
+onAuthStateChanged(auth,async(user)=>{
+  if(!user) return;
+  const snap = await getDoc(doc(db,"users",user.uid));
+  if(!snap.exists()) return;
+  const data = snap.data();
+
+  // Redirect non-admin from admin pages
+  if(location.pathname.includes("admin") && data.role!=="admin") location.href="login.html";
 });
 
-/* ===========================
-   ADMIN USERS LIST
-=========================== */
-async function loadUsers() {
-  const box = document.getElementById("usersList");
-  if (!box) return;
+// ============================
+// ADMIN CHAT USERS
+// ============================
+let activeUserId = null;
+let unsubscribeMessages = null;
+const messagesBox = $id("adminMessages");
+const msgInput = $id("adminMessageInput");
+const sendBtn = $id("adminSendBtn");
+const fileInput = $id("adminFileInput");
+const usersList = $id("usersList");
 
-  const snap = await getDocs(
-    query(collection(db, "users"), where("role", "==", "user"))
-  );
+export function loadAdminChatUsersRealtime(){
+  onSnapshot(collection(db,"users"),snap=>{
+    usersList.innerHTML = "";
+    snap.forEach(d=>{
+      const u = d.data();
+      if(u.role==="admin") return;
 
-  box.innerHTML = "";
-  snap.forEach(d => {
-    const u = d.data();
-    const li = document.createElement("li");
-    li.textContent = `${u.username} ${u.online ? "🟢" : "⚫"}`;
-    li.onclick = () => openChat(d.id);
-    box.appendChild(li);
-  });
-}
-loadUsers();
+      const li = document.createElement("li");
+      li.style.cursor="pointer";
 
-/* ===========================
-   CHAT (ADMIN + USER)
-=========================== */
+      const unread = u.unreadForAdmin || 0;
+      li.textContent = u.username || u.email;
+      if(unread>0) li.textContent += ` (${unread})`;
 
-let activeChatId = null;
-
-// CREATE OR OPEN CHAT
-async function openChat(userId) {
-  const adminId = auth.currentUser.uid;
-  const q = query(
-    collection(db, "chats"),
-    where("members", "array-contains", adminId)
-  );
-
-  const snap = await getDocs(q);
-  let chatDoc = snap.docs.find(d => d.data().members.includes(userId));
-
-  if (!chatDoc) {
-    chatDoc = await addDoc(collection(db, "chats"), {
-      members: [adminId, userId],
-      updatedAt: serverTimestamp()
+      li.onclick = ()=> openChat(d.id,u.username||u.email);
+      usersList.appendChild(li);
     });
-    activeChatId = chatDoc.id;
-  } else activeChatId = chatDoc.id;
-
-  loadMessages();
+  });
 }
+loadAdminChatUsersRealtime();
 
-// LOAD MESSAGES
-function loadMessages() {
-  const box = document.getElementById("adminMessages") ||
-              document.getElementById("userMessages");
-  if (!box) return;
+export async function openChat(userId,username){
+  activeUserId=userId;
+  $id("adminChatTitle").textContent=username;
+  if(messagesBox) messagesBox.innerHTML="";
+  msgInput.disabled=false;
+  sendBtn.disabled=false;
 
-  const q = query(
-    collection(db, "messages"),
-    where("chatId", "==", activeChatId),
-    orderBy("createdAt")
-  );
+  // Clear unread for admin
+  await updateDoc(doc(db,"users",userId),{unreadForAdmin:0});
 
-  onSnapshot(q, snap => {
-    box.innerHTML = "";
-    snap.forEach(d => {
-      const m = d.data();
-      const div = document.createElement("div");
-      div.className = m.senderId === auth.currentUser.uid ? "msg admin" : "msg user";
-      div.textContent = m.text || "";
-      box.appendChild(div);
+  if(typeof unsubscribeMessages==="function") unsubscribeMessages();
+
+  const q=query(collection(db,"messages"),orderBy("createdAt"));
+  unsubscribeMessages = onSnapshot(q,snap=>{
+    if(!messagesBox) return;
+    messagesBox.innerHTML="";
+    snap.forEach(d=>{
+      const m=d.data();
+      if((m.senderId===auth.currentUser.uid && m.receiverId===userId) ||
+         (m.senderId===userId && m.receiverId===auth.currentUser.uid)){
+          const div=document.createElement("div");
+          div.textContent=m.text||"";
+          div.className=m.senderId===auth.currentUser.uid?"msg admin":"msg user";
+
+          if(m.imageUrl){
+            const img=document.createElement("img");
+            img.src=m.imageUrl;
+            img.style.maxWidth="200px";
+            div.appendChild(img);
+          }
+          messagesBox.appendChild(div);
+          messagesBox.scrollTop=messagesBox.scrollHeight;
+      }
     });
-    box.scrollTop = box.scrollHeight;
   });
 }
 
-// SEND MESSAGE
-async function sendMessage(inputId) {
-  const input = document.getElementById(inputId);
-  if (!input.value || !activeChatId) return;
+sendBtn?.addEventListener("click",async()=>{
+  const text=getInputValue(msgInput);
+  if(!text || !activeUserId || !auth.currentUser) return;
 
-  await addDoc(collection(db, "messages"), {
-    chatId: activeChatId,
-    senderId: auth.currentUser.uid,
-    text: input.value,
-    createdAt: serverTimestamp()
+  await addDoc(collection(db,"messages"),{
+    senderId:auth.currentUser.uid,
+    receiverId:activeUserId,
+    text,
+    imageUrl:null,
+    createdAt:serverTimestamp()
   });
 
-  await updateDoc(doc(db, "chats", activeChatId), {
-    lastMessage: input.value,
-    updatedAt: serverTimestamp()
+  msgInput.value="";
+});
+
+fileInput?.addEventListener("change",async()=>{
+  const file=fileInput.files?.[0];
+  if(!file || !activeUserId || !auth.currentUser) return;
+
+  const storageRef=ref(storage,`chat/${Date.now()}_${file.name}`);
+  await uploadBytes(storageRef,file);
+  const url=await getDownloadURL(storageRef);
+
+  await addDoc(collection(db,"messages"),{
+    senderId:auth.currentUser.uid,
+    receiverId:activeUserId,
+    text:null,
+    imageUrl:url,
+    createdAt:serverTimestamp()
   });
 
-  input.value = "";
-}
-
-window.sendAdminMessage = () => sendMessage("adminMessageInput");
-window.sendUserMessage = () => sendMessage("userMessageInput");
-
-/* ===========================
-   COURSES (ADMIN ONLY)
-=========================== */
-window.addCourse = async (title, price) => {
-  await addDoc(collection(db, "courses"), {
-    title, price,
-    createdAt: serverTimestamp()
-  });
-};
-
-/* ===========================
-   SUBSCRIPTIONS (ADMIN ONLY)
-=========================== */
-window.addSubscription = async (name, amount) => {
-  await addDoc(collection(db, "subscriptions"), {
-    name, amount,
-    createdAt: serverTimestamp()
-  });
-};
+  fileInput.value="";
+});
