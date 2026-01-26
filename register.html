@@ -11,6 +11,7 @@
   --card:#1e293b;
   --accent:#22c55e;
   --text:#ffffff;
+  --muted:#94a3b8;
 }
 html,body{height:100%;margin:0}
 body{
@@ -20,23 +21,39 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
+  padding:20px;
 }
-.container{width:100%;max-width:420px;padding:20px}
+.container{width:100%;max-width:420px}
 .card{
   background:var(--card);
   padding:28px;
   border-radius:12px;
   box-shadow:0 8px 30px rgba(0,0,0,.4);
 }
-h2{margin-bottom:10px}
+h2{margin-bottom:10px;font-size:20px}
+.input-group{
+  position:relative;
+  margin-top:12px;
+}
 input{
   width:100%;
   padding:12px;
-  margin-top:12px;
   border-radius:6px;
   border:none;
   background:rgba(255,255,255,.05);
   color:#fff;
+  font-size:15px;
+  outline:none;
+  box-sizing:border-box;
+}
+.eye-toggle{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  cursor:pointer;
+  color:var(--muted);
+  user-select:none;
 }
 button{
   width:100%;
@@ -47,6 +64,7 @@ button{
   background:var(--accent);
   font-weight:bold;
   cursor:pointer;
+  color:#042107;
 }
 .hidden{display:none}
 #register-message{margin-top:12px;font-size:14px}
@@ -63,8 +81,16 @@ a{color:var(--accent);text-decoration:none}
 
     <input id="regUsername" placeholder="Username">
     <input id="regEmail" type="email" placeholder="Email">
-    <input id="regPassword" type="password" placeholder="Password">
-    <input id="regConfirmPassword" type="password" placeholder="Confirm Password">
+
+    <div class="input-group">
+      <input id="regPassword" type="password" placeholder="Password">
+      <span class="eye-toggle" id="togglePassword">👁</span>
+    </div>
+
+    <div class="input-group">
+      <input id="regConfirmPassword" type="password" placeholder="Confirm Password">
+      <span class="eye-toggle" id="toggleConfirm">👁</span>
+    </div>
 
     <div id="register-message" class="hidden"></div>
 
@@ -75,12 +101,79 @@ a{color:var(--accent);text-decoration:none}
 </div>
 
 <script>
-document.getElementById("register-btn").onclick=(e)=>{
-  if(window.registerUser) window.registerUser(e);
+const $id=id=>document.getElementById(id);
+const getValue=el=>el?el.value.trim():"";
+const showMessage=(el,msg,type="error")=>{
+  if(!el) return;
+  el.textContent=msg;
+  el.classList.remove("hidden","error","success");
+  el.classList.add(type);
 };
+const clearMessage=el=>{if(!el) return; el.textContent=""; el.classList.add("hidden");};
+
+// ====================
+// Password toggle
+// ====================
+function togglePassword(id, toggleId){
+  const inp = $id(id);
+  const toggle = $id(toggleId);
+  toggle.addEventListener("click", ()=>{
+    if(inp.type==="password"){
+      inp.type="text";
+      toggle.textContent="🙈";
+    }else{
+      inp.type="password";
+      toggle.textContent="👁";
+    }
+  });
+}
+togglePassword("regPassword","togglePassword");
+togglePassword("regConfirmPassword","toggleConfirm");
+
+// ====================
+// Register button
+// ====================
+$id("register-btn").addEventListener("click", async ()=>{
+  const msg=$id("register-message");
+  clearMessage(msg);
+
+  const username=getValue($id("regUsername"));
+  const email=getValue($id("regEmail"));
+  const password=getValue($id("regPassword"));
+  const confirm=getValue($id("regConfirmPassword"));
+
+  if(!username) return showMessage(msg,"Please enter username");
+  if(!email) return showMessage(msg,"Please enter email");
+  if(!password) return showMessage(msg,"Please enter password");
+  if(password!==confirm) return showMessage(msg,"Passwords do not match");
+
+  try{
+    const btn=$id("register-btn");
+    btn.disabled=true;
+    btn.textContent="Creating account...";
+
+    if(window.registerUser){
+      await window.registerUser({username,email,password});
+      showMessage(msg,"✅ Account created! Redirecting...","success");
+    }
+  }catch(err){
+    console.error(err);
+    showMessage(msg,err.message||"Registration failed");
+  }finally{
+    const btn=$id("register-btn");
+    btn.disabled=false;
+    btn.textContent="Create Account";
+  }
+});
+
+// Enter key submission
+["regUsername","regEmail","regPassword","regConfirmPassword"].forEach(id=>{
+  $id(id)?.addEventListener("keydown",e=>{
+    if(e.key==="Enter") $id("register-btn").click();
+  });
+});
 </script>
 
-<!-- 🔥 CRITICAL ORDER -->
 <script type="module" src="./app.js"></script>
 </body>
 </html>
