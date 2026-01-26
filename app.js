@@ -26,7 +26,7 @@ import {
   orderBy,
   serverTimestamp,
   onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ============================
 // Helper Functions
