@@ -2,128 +2,44 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Chat | BiTForeX Academy</title>
+<title>Admin Chat</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
-/* ===========================
-   GLOBAL
-=========================== */
-*{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial;
   background:#0b1220;
   color:#fff;
   height:100vh;
-  overflow:hidden;
 }
-
-/* ===========================
-   NAVBAR
-=========================== */
-.navbar{
-  position:fixed;
-  top:0;
-  width:100%;
-  height:70px;
-  background:#020617;
-  border-bottom:1px solid #1e293b;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 20px;
-  z-index:10;
-}
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.logo-circle img{
-  width:38px;
-  height:38px;
-  border-radius:50%;
-}
-.logo-text{
-  font-weight:bold;
-  color:#22c55e;
-}
-.nav a{
-  color:#94a3b8;
-  text-decoration:none;
-  margin-left:15px;
-  font-size:14px;
-}
-.nav a.active{
-  color:#22c55e;
-  font-weight:bold;
-}
-
-/* ===========================
-   MAIN LAYOUT
-=========================== */
-.container{
-  position:fixed;
-  top:70px;
-  bottom:0;
-  left:0;
-  right:0;
-  padding:15px;
-}
-.chat-wrap{
+.layout{
   display:flex;
   height:100%;
-  gap:12px;
 }
-
-/* ===========================
-   USERS LIST
-=========================== */
-.contacts{
+.users{
   width:260px;
   background:#020617;
-  border:1px solid #1e293b;
-  border-radius:12px;
-  padding:12px;
+  border-right:1px solid #1e293b;
   overflow-y:auto;
-}
-.contacts h3{
-  margin:0 0 10px 0;
-  font-size:15px;
-}
-.contact-list{
-  list-style:none;
-  padding:0;
-  margin:0;
-}
-.contact-list li{
   padding:10px;
+}
+.users li{
+  list-style:none;
+  padding:10px;
+  margin-bottom:6px;
+  background:#0b1220;
   border-radius:8px;
   cursor:pointer;
-  background:#0b1220;
-  margin-bottom:6px;
 }
-.contact-list li:hover{
-  background:#1e293b;
-}
-
-/* ===========================
-   CHAT PANEL
-=========================== */
-.chat-panel{
+.chat{
   flex:1;
   display:flex;
   flex-direction:column;
-  background:#020617;
-  border:1px solid #1e293b;
-  border-radius:12px;
-  overflow:hidden;
 }
-.chat-header{
-  padding:12px;
+.header{
+  padding:15px;
   border-bottom:1px solid #1e293b;
-  font-weight:bold;
   color:#22c55e;
 }
 .messages{
@@ -134,9 +50,8 @@ body{
 .msg{
   max-width:70%;
   padding:10px;
+  margin-bottom:8px;
   border-radius:10px;
-  margin-bottom:10px;
-  word-wrap:break-word;
 }
 .msg.admin{
   background:#22c55e;
@@ -146,116 +61,44 @@ body{
 .msg.user{
   background:#1e293b;
 }
-.msg img{
-  max-width:100%;
-  border-radius:8px;
-  margin-top:6px;
-}
-
-/* ===========================
-   INPUT AREA
-=========================== */
-.chat-input{
+.input{
   display:flex;
-  align-items:center;
   gap:8px;
   padding:10px;
   border-top:1px solid #1e293b;
 }
-.chat-input input[type="text"]{
+.input input{
   flex:1;
   padding:10px;
   border-radius:8px;
   border:none;
-  outline:none;
 }
-.emoji-btn{
-  background:#0b1220;
-  border:none;
-  padding:10px;
-  border-radius:8px;
-  cursor:pointer;
-  color:#fff;
-}
-.btn{
-  background:#22c55e;
-  border:none;
+button{
   padding:10px 16px;
+  border:none;
   border-radius:8px;
+  background:#22c55e;
   font-weight:bold;
-  cursor:pointer;
-  color:#000;
-}
-.btn:disabled,
-.emoji-btn:disabled,
-.chat-input input:disabled{
-  opacity:.5;
-  cursor:not-allowed;
 }
 </style>
 </head>
 
 <body>
 
-<!-- NAV -->
-<header class="navbar">
-  <div class="brand">
-    <div class="logo-circle"><img src="logo.jpg" alt="logo"></div>
-    <span class="logo-text">BiTForeX Admin</span>
+<div class="layout">
+  <ul class="users" id="usersList"></ul>
+
+  <div class="chat">
+    <div class="header" id="adminChatTitle">Select user</div>
+    <div class="messages" id="adminMessages"></div>
+
+    <div class="input">
+      <input id="adminMessageInput" disabled placeholder="Type message">
+      <button id="adminSendBtn" disabled>Send</button>
+    </div>
   </div>
+</div>
 
-  <nav class="nav">
-    <a href="admin.html">Dashboard</a>
-    <a href="admin-users.html">Users</a>
-    <a href="admin-payments.html">Payments</a>
-    <a href="admin-chat.html" class="active">Chat Inbox</a>
-    <a href="login.html">Logout</a>
-  </nav>
-</header>
-
-<!-- MAIN -->
-<main class="container">
-
-  <div class="chat-wrap">
-
-    <!-- USERS -->
-    <aside class="contacts">
-      <h3>Users</h3>
-      <ul class="contact-list" id="usersList"></ul>
-    </aside>
-
-    <!-- CHAT -->
-    <section class="chat-panel">
-      <div class="chat-header" id="adminChatTitle">
-        Select a user
-      </div>
-
-      <div class="messages" id="adminMessages"></div>
-
-      <div class="chat-input">
-        <input
-          type="text"
-          id="adminMessageInput"
-          placeholder="Type message…"
-          disabled
-        >
-
-        <input
-          type="file"
-          id="adminFileInput"
-          accept="image/*"
-          hidden
-        >
-
-        <button id="adminFileBtn" class="emoji-btn" disabled>📎</button>
-        <button id="adminSendBtn" class="btn" disabled>Send</button>
-      </div>
-    </section>
-
-  </div>
-</main>
-
-<!-- CORE -->
 <script type="module" src="firebase.js"></script>
 <script type="module" src="app.js"></script>
 
