@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,131 +6,36 @@
 <title>Admin Chat | BiTForeX Academy</title>
 
 <style>
-/* ========== GLOBAL ========== */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: Arial, sans-serif;
-  background: #0b1220;
-  color: #fff;
-  height: 100vh;
-  overflow: hidden;
-}
-/* ========== NAVBAR ========== */
-.navbar {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  height: 70px;
-  background: #020617;
-  border-bottom: 1px solid #1e293b;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  z-index: 10;
-}
-.brand { display: flex; align-items: center; gap: 10px; }
-.logo-circle img { width: 38px; height: 38px; border-radius: 50%; }
-.logo-text { font-weight: bold; color: #22c55e; }
-.nav a { color: #94a3b8; text-decoration: none; margin-left: 15px; font-size: 14px; }
-.nav a.active { color: #22c55e; font-weight: bold; }
-
-/* ========== MAIN LAYOUT ========== */
-.container {
-  position: fixed;
-  top: 70px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 15px;
-}
-.chat-wrap { display: flex; height: 100%; gap: 12px; }
-
-/* ========== USERS LIST ========== */
-.contacts {
-  width: 260px;
-  background: #020617;
-  border: 1px solid #1e293b;
-  border-radius: 12px;
-  padding: 12px;
-  overflow-y: auto;
-}
-.contacts h3 { margin-bottom: 10px; font-size: 15px; }
-.contact-list { list-style: none; padding: 0; margin: 0; }
-.contact-list li {
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  background: #0b1220;
-  margin-bottom: 6px;
-}
-.contact-list li:hover { background: #1e293b; }
-
-/* ========== CHAT PANEL ========== */
-.chat-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: #020617;
-  border: 1px solid #1e293b;
-  border-radius: 12px;
-  overflow: hidden;
-}
-.chat-header {
-  padding: 12px;
-  border-bottom: 1px solid #1e293b;
-  font-weight: bold;
-  color: #22c55e;
-}
-.messages {
-  flex: 1;
-  padding: 15px;
-  overflow-y: auto;
-}
-.msg {
-  max-width: 70%;
-  padding: 10px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  word-wrap: break-word;
-}
-.msg.admin { background: #22c55e; color: #000; margin-left: auto; }
-.msg.user { background: #1e293b; }
-.msg img { max-width: 200px; border-radius: 8px; margin-top: 6px; }
-
-/* ========== INPUT AREA ========== */
-.chat-input {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px;
-  border-top: 1px solid #1e293b;
-}
-.chat-input input[type="text"] {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-}
-.emoji-btn, .btn {
-  background: #22c55e;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  color: #000;
-}
-.emoji-btn:disabled, .btn:disabled, .chat-input input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#0b1220;color:#fff;height:100vh;overflow:hidden;}
+.navbar{position:fixed;top:0;width:100%;height:70px;background:#020617;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:10;}
+.brand{display:flex;align-items:center;gap:10px;}
+.logo-circle img{width:38px;height:38px;border-radius:50%;}
+.logo-text{font-weight:bold;color:#22c55e;}
+.nav a{color:#94a3b8;text-decoration:none;margin-left:15px;font-size:14px;}
+.nav a.active{color:#22c55e;font-weight:bold;}
+.container{position:fixed;top:70px;bottom:0;left:0;right:0;padding:15px;}
+.chat-wrap{display:flex;height:100%;gap:12px;}
+.contacts{width:260px;background:#020617;border:1px solid #1e293b;border-radius:12px;padding:12px;overflow-y:auto;}
+.contacts h3{margin:0 0 10px 0;font-size:15px;}
+.contact-list{list-style:none;padding:0;margin:0;}
+.contact-list li{padding:10px;border-radius:8px;cursor:pointer;background:#0b1220;margin-bottom:6px;}
+.contact-list li:hover{background:#1e293b;}
+.chat-panel{flex:1;display:flex;flex-direction:column;background:#020617;border:1px solid #1e293b;border-radius:12px;overflow:hidden;}
+.chat-header{padding:12px;border-bottom:1px solid #1e293b;font-weight:bold;color:#22c55e;}
+.messages{flex:1;padding:15px;overflow-y:auto;}
+.msg{max-width:70%;padding:10px;border-radius:10px;margin-bottom:10px;word-wrap:break-word;}
+.msg.admin{background:#22c55e;color:#000;margin-left:auto;}
+.msg.user{background:#1e293b;}
+.msg img{max-width:100%;border-radius:8px;margin-top:6px;}
+.chat-input{display:flex;align-items:center;gap:8px;padding:10px;border-top:1px solid #1e293b;}
+.chat-input input[type="text"]{flex:1;padding:10px;border-radius:8px;border:none;outline:none;}
+.emoji-btn{background:#0b1220;border:none;padding:10px;border-radius:8px;cursor:pointer;color:#fff;}
+.btn{background:#22c55e;border:none;padding:10px 16px;border-radius:8px;font-weight:bold;cursor:pointer;color:#000;}
+.btn:disabled,.emoji-btn:disabled,.chat-input input:disabled{opacity:.5;cursor:not-allowed;}
 </style>
 </head>
 
 <body>
-
 <header class="navbar">
   <div class="brand">
     <div class="logo-circle"><img src="logo.jpg" alt="logo"></div>
@@ -147,103 +52,26 @@ body {
 
 <main class="container">
   <div class="chat-wrap">
-    <!-- USERS -->
     <aside class="contacts">
       <h3>Users</h3>
       <ul class="contact-list" id="usersList"></ul>
     </aside>
 
-    <!-- CHAT -->
     <section class="chat-panel">
       <div class="chat-header" id="adminChatTitle">Select a user</div>
       <div class="messages" id="adminMessages"></div>
 
       <div class="chat-input">
-        <input type="text" id="adminMessageInput" placeholder="Type a message…" disabled>
+        <input type="text" id="adminMessageInput" placeholder="Type message…" disabled>
+        <input type="file" id="adminFileInput" accept="image/*" hidden>
+        <button id="adminFileBtn" class="emoji-btn" disabled>📎</button>
         <button id="adminSendBtn" class="btn" disabled>Send</button>
       </div>
     </section>
   </div>
 </main>
 
-<script type="module">
-import { auth, db } from "./firebase.js";
-import { collection, doc, addDoc, query, orderBy, onSnapshot, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-// DOM
-const usersList = document.getElementById("usersList");
-const messagesBox = document.getElementById("adminMessages");
-const msgInput = document.getElementById("adminMessageInput");
-const sendBtn = document.getElementById("adminSendBtn");
-
-// Current chat
-let activeUserId = null;
-
-// Load users into chat
-async function loadAdminChatUsers() {
-  usersList.innerHTML = `<p class="muted">Loading users...</p>`;
-  const snap = await getDocs(collection(db, "users"));
-  usersList.innerHTML = "";
-
-  snap.forEach(d => {
-    const u = d.data();
-    if(u.role === "admin") return;
-    const li = document.createElement("li");
-    li.textContent = u.username || u.email;
-    li.style.cursor = "pointer";
-    li.onclick = () => openChat(d.id, u.username || u.email);
-    usersList.appendChild(li);
-  });
-}
-
-// Open chat
-function openChat(userId, username) {
-  activeUserId = userId;
-  document.getElementById("adminChatTitle").textContent = username;
-  messagesBox.innerHTML = "";
-  msgInput.disabled = false;
-  sendBtn.disabled = false;
-
-  const q = query(collection(db, "messages"), orderBy("createdAt"));
-  onSnapshot(q, snap => {
-    messagesBox.innerHTML = "";
-    snap.forEach(d => {
-      const m = d.data();
-      if ((m.senderId === auth.currentUser.uid && m.receiverId === userId) ||
-          (m.senderId === userId && m.receiverId === auth.currentUser.uid)) {
-        const div = document.createElement("div");
-        div.textContent = m.text || "";
-        div.className = m.senderId === auth.currentUser.uid ? "msg admin" : "msg user";
-
-        if (m.imageUrl) {
-          const img = document.createElement("img");
-          img.src = m.imageUrl;
-          div.appendChild(img);
-        }
-
-        messagesBox.appendChild(div);
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-      }
-    });
-  });
-}
-
-// Send message
-sendBtn?.addEventListener("click", async () => {
-  const text = msgInput.value.trim();
-  if(!text || !activeUserId) return;
-  await addDoc(collection(db, "messages"), {
-    senderId: auth.currentUser.uid,
-    receiverId: activeUserId,
-    text,
-    imageUrl: null,
-    createdAt: serverTimestamp()
-  });
-  msgInput.value = "";
-});
-
-loadAdminChatUsers();
-</script>
-
+<script type="module" src="firebase.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
