@@ -1,245 +1,274 @@
-/* =========================================================
-   FIREBASE IMPORTS (v10.12.2)
-========================================================= */
-import { auth, db, storage } from "./firebase.js";
+// ==========================
+// 🔹 IMPORT FIREBASE
+// ==========================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, addDoc, getDoc, getDocs, updateDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getStorage, ref as stRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+// ==========================
+// 🔹 CONFIGURATION
+// ==========================
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-import {
-  ref,
-  set,
-  push,
-  update,
-  onValue,
-  onChildAdded,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+// ==========================
+// 🔹 USER AUTH FUNCTIONS
+// ==========================
 
-import {
-  ref as sRef,
-  uploadBytes,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+// Register
+window.registerUser = async function(e){
+  e.preventDefault();
+  const username = document.getElementById("regUsername")?.value.trim();
+  const email = document.getElementById("regEmail")?.value.trim();
+  const password = document.getElementById("regPassword")?.value.trim();
+  const confirm = document.getElementById("regConfirmPassword")?.value.trim();
+  const msg = document.getElementById("register-message");
 
-/* =========================================================
-   AUTH — REGISTER
-========================================================= */
-window.registerUser = async (email, password, username) => {
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
+  if(!username || !email || !password || !confirm){
+    msg.className="error"; msg.innerText="All fields are required"; return;
+  }
+  if(password!==confirm){ msg.className="error"; msg.innerText="Passwords do not match"; return; }
 
-    await set(ref(db, `users/${cred.user.uid}`), {
-      uid: cred.user.uid,
-      email,
+  try{
+    const userCred = await createUserWithEmailAndPassword(auth, email, password);
+    await setDoc(doc(db,"users",userCred.user.uid),{
       username,
-      role: "user",
-      online: true,
-      subscription: null,
-      createdAt: serverTimestamp()
+      email,
+      role:"user",
+      active:false,
+      subscription:null,
+      createdAt:serverTimestamp()
     });
-
-    location.href = "user-chat.html";
-  } catch (e) {
-    alert(e.message);
+    msg.className="success"; msg.innerText="Account created!";
+  } catch(err){
+    msg.className="error"; msg.innerText=err.message;
   }
-};
+}
 
-/* =========================================================
-   AUTH — LOGIN
-========================================================= */
-window.loginUser = async (email, password) => {
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
+// Login
+window.loginUser = async function(e){
+  e.preventDefault();
+  const email = document.getElementById("loginEmail")?.value.trim();
+  const password = document.getElementById("loginPassword")?.value.trim();
+  const msg = document.getElementById("login-message");
 
-    await update(ref(db, `users/${cred.user.uid}`), {
-      online: true
-    });
-
-    onValue(ref(db, `users/${cred.user.uid}/role`), snap => {
-      if (snap.val() === "admin") {
-        location.href = "admin-dashboard.html";
-      } else {
-        location.href = "user-chat.html";
-      }
-    }, { onlyOnce: true });
-
-  } catch (e) {
-    alert(e.message);
+  try{
+    await signInWithEmailAndPassword(auth,email,password);
+    msg.className="success"; msg.innerText="Login successful!";
+    // redirect
+    const user = auth.currentUser;
+    const docSnap = await getDoc(doc(db,"users",user.uid));
+    if(docSnap.exists()){
+      if(docSnap.data().role==="admin") window.location.href="admin-dashboard.html";
+      else window.location.href="user-chat.html";
+    }
+  } catch(err){
+    msg.className="error"; msg.innerText=err.message;
   }
-};
+}
 
-/* =========================================================
-   AUTH — LOGOUT
-========================================================= */
-window.logoutUser = async () => {
-  const user = auth.currentUser;
-  if (user) {
-    await update(ref(db, `users/${user.uid}`), { online: false });
-  }
+// Logout
+window.logoutUser = async function(){
   await signOut(auth);
-  location.href = "login.html";
-};
+  window.location.href="login.html";
+}
 
-/* =========================================================
-   AUTH — FORGOT PASSWORD
-========================================================= */
-window.resetPassword = async (email) => {
-  try {
-    await sendPasswordResetEmail(auth, email);
-    alert("Password reset email sent");
-  } catch (e) {
-    alert(e.message);
+// Forgot Password
+window.forgotPassword = async function(email){
+  if(!email) return alert("Enter your email");
+  try{
+    await sendPasswordResetEmail(auth,email);
+    alert("Reset email sent!");
+  } catch(err){
+    alert(err.message);
   }
+}
+
+// ==========================
+// 🔹 ADMIN USERS MANAGEMENT
+// ==========================
+export async function loadAdminUsers(filter="all"){
+  const container = document.getElementById("adminUsersTable");
+  if(!container) return;
+
+  const usersSnap = await getDocs(collection(db,"users"));
+  if(usersSnap.empty){ container.innerHTML="<p>No users found</p>"; return; }
+
+  container.innerHTML="";
+  usersSnap.forEach(docSnap=>{
+    const u = docSnap.data();
+    if(filter!=="all" && ((u.active?"Active":"Inactive")!==filter)) return;
+
+    const sub = u.subscription ? u.subscription.planName + " ("+u.subscription.status+")" : "None";
+    const card = document.createElement("div");
+    card.className="user-card";
+    card.innerHTML=`
+      <h3>${u.username}</h3>
+      <div class="muted">${u.email}</div>
+      <p>Plan: ${sub}</p>
+      <span class="user-badge ${u.active?"badge-active":"badge-inactive"}">${u.active?"Active":"Inactive"}</span>
+      <br>
+      <button class="view-btn" onclick="viewUser('${docSnap.id}')">View User</button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+window.viewUser = async function(uid){
+  const docSnap = await getDoc(doc(db,"users",uid));
+  if(!docSnap.exists()) return alert("User not found");
+  const u = docSnap.data();
+
+  const popup = document.createElement("div");
+  popup.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;justify-content:center;align-items:center;";
+  popup.innerHTML=`
+    <div style="background:#020617;padding:20px;border-radius:12px;width:90%;max-width:400px;position:relative;">
+      <h3>${u.username}</h3>
+      <p>Email: ${u.email}</p>
+      <p>Subscription: ${u.subscription?u.subscription.planName:"None"}</p>
+      <button style="background:#22c55e;color:#000;padding:10px;width:100%;border:none;border-radius:6px;margin-top:10px;" onclick="startAdminChat('${uid}')">Message User</button>
+    </div>
+  `;
+  popup.addEventListener("click",e=>{ if(e.target===popup) popup.remove(); });
+  document.body.appendChild(popup);
+}
+
+// ==========================
+// 🔹 ADMIN & USER CHAT
+// ==========================
+export async function startAdminChat(uid){
+  localStorage.setItem("chatWith",uid);
+  window.location.href="admin-chat.html";
+}
+
+// Load messages
+export function loadMessages(chatBoxId){
+  const box = document.getElementById(chatBoxId);
+  if(!box) return;
+  const chatWith = localStorage.getItem("chatWith");
+  if(!chatWith) { box.innerHTML="<p>Select user to chat</p>"; return; }
+
+  const msgRef = collection(db,"chats",chatWith,"messages");
+  const q = query(msgRef,orderBy("time","asc"));
+
+  onSnapshot(q, snap=>{
+    box.innerHTML="";
+    snap.forEach(m=>{
+      const div = document.createElement("div");
+      div.className="msg "+(m.data().from==="admin"?"admin":"user");
+      if(m.data().type==="text") div.innerText=m.data().text;
+      else if(m.data().type==="image"){
+        const img = document.createElement("img"); img.src=m.data().url;
+        div.appendChild(img);
+      }
+      box.appendChild(div);
+      box.scrollTop=box.scrollHeight;
+    });
+  });
+}
+
+// Send message
+export async function sendMessage(chatBoxId,msgInputId,fileInputId){
+  const box = document.getElementById(chatBoxId);
+  const input = document.getElementById(msgInputId);
+  const fileInput = document.getElementById(fileInputId);
+  const chatWith = localStorage.getItem("chatWith");
+  if(!chatWith || !input) return;
+
+  let payload = {from:"user",type:"text",text:input.value,time:serverTimestamp()};
+  if(fileInput && fileInput.files.length>0){
+    const f = fileInput.files[0];
+    const path = `chats/${chatWith}/${Date.now()}_${f.name}`;
+    const storageRef = stRef(storage,path);
+    await uploadBytes(storageRef,f);
+    const url = await getDownloadURL(storageRef);
+    payload = {from:"user",type:"image",url,time:serverTimestamp()};
+    fileInput.value="";
+  }
+
+  await addDoc(collection(db,"chats",chatWith,"messages"),payload);
+  input.value="";
+}
+
+// ==========================
+// 🔹 SUBSCRIPTIONS
+// ==========================
+export async function loadSubscriptions(userId,containerId){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+
+  const q = collection(db,"subscriptions");
+  const snap = await getDocs(q);
+  container.innerHTML="";
+  snap.forEach(docSnap=>{
+    const sub = docSnap.data();
+    const card = document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <h3>${sub.name}</h3>
+      <p>${sub.description || ""}</p>
+      <button onclick="selectSubscription('${docSnap.id}')">Choose Plan</button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+window.selectSubscription = async function(planId){
+  const user = auth.currentUser;
+  if(!user) return alert("Login first");
+  const docSnap = await getDoc(doc(db,"subscriptions",planId));
+  if(!docSnap.exists()) return alert("Plan not found");
+
+  await updateDoc(doc(db,"users",user.uid),{
+    subscription:{
+      planId:docSnap.id,
+      planName:docSnap.data().name,
+      status:"pending",
+      start:Date.now(),
+      expires:Date.now()+30*24*60*60*1000
+    }
+  });
+  alert("Subscription selected, proceed to payment");
 };
 
-/* =========================================================
-   AUTH STATE + PRESENCE
-========================================================= */
-onAuthStateChanged(auth, user => {
-  if (!user) return;
-  update(ref(db, `users/${user.uid}`), { online: true });
-  window.addEventListener("beforeunload", () => {
-    update(ref(db, `users/${user.uid}`), { online: false });
+// ==========================
+// 🔹 COURSES (optional)
+// ==========================
+export async function loadCourses(containerId){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  const snap = await getDocs(collection(db,"courses"));
+  container.innerHTML="";
+  snap.forEach(docSnap=>{
+    const course = docSnap.data();
+    const card = document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <h3>${course.title}</h3>
+      <p>${course.description || ""}</p>
+    `;
+    container.appendChild(card);
   });
+}
+
+// ==========================
+// 🔹 INITIALIZATION
+// ==========================
+onAuthStateChanged(auth,user=>{
+  if(user){
+    const uid=user.uid;
+    // update online status
+    updateDoc(doc(db,"users",uid),{onlin:true});
+  }
 });
-
-/* =========================================================
-   USER CHAT
-========================================================= */
-const chatBox = document.getElementById("chatBox");
-const sendBtn = document.getElementById("sendBtn");
-const messageInput = document.getElementById("messageInput");
-const imageInput = document.getElementById("imageInput");
-
-if (chatBox && sendBtn) {
-  onAuthStateChanged(auth, user => {
-    if (!user) return;
-
-    const chatRef = ref(db, `chats/${user.uid}/messages`);
-
-    onChildAdded(chatRef, snap => renderMsg(snap.val()));
-
-    sendBtn.onclick = async () => {
-      if (!messageInput.value.trim()) return;
-      await push(chatRef, {
-        sender: "user",
-        text: messageInput.value,
-        image: null,
-        time: serverTimestamp()
-      });
-      messageInput.value = "";
-    };
-
-    imageInput.onchange = async () => {
-      const file = imageInput.files[0];
-      if (!file) return;
-      const imgRef = sRef(storage, `chat/${user.uid}/${Date.now()}`);
-      await uploadBytes(imgRef, file);
-      const url = await getDownloadURL(imgRef);
-      await push(chatRef, {
-        sender: "user",
-        text: "",
-        image: url,
-        time: serverTimestamp()
-      });
-    };
-  });
-}
-
-function renderMsg(m) {
-  const div = document.createElement("div");
-  div.className = "msg" + (m.sender === "user" ? " user" : "");
-  if (m.text) div.textContent = m.text;
-  if (m.image) {
-    const img = document.createElement("img");
-    img.src = m.image;
-    div.appendChild(img);
-  }
-  chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-/* =========================================================
-   ADMIN CHAT
-========================================================= */
-const adminChatBox = document.getElementById("adminChatBox");
-const adminSendBtn = document.getElementById("adminSendBtn");
-const adminInput = document.getElementById("adminMessageInput");
-const uid = new URLSearchParams(location.search).get("uid");
-
-if (adminChatBox && adminSendBtn && uid) {
-  const chatRef = ref(db, `chats/${uid}/messages`);
-
-  onChildAdded(chatRef, snap => {
-    const d = document.createElement("div");
-    d.className = "msg admin";
-    d.textContent = snap.val().text;
-    adminChatBox.appendChild(d);
-  });
-
-  adminSendBtn.onclick = async () => {
-    if (!adminInput.value.trim()) return;
-    await push(chatRef, {
-      sender: "admin",
-      text: adminInput.value,
-      time: serverTimestamp()
-    });
-    adminInput.value = "";
-  };
-}
-
-/* =========================================================
-   ADMIN USERS
-========================================================= */
-const usersList = document.getElementById("usersList");
-if (usersList) {
-  onValue(ref(db, "users"), snap => {
-    usersList.innerHTML = "";
-    snap.forEach(s => {
-      const u = s.val();
-      usersList.innerHTML += `
-        <div class="user-card">
-          <b>${u.username}</b><br>
-          ${u.email}<br>
-          <span class="${u.online ? 'status' : 'inactive'}">
-            ${u.online ? 'Online' : 'Offline'}
-          </span><br><br>
-          <button onclick="location.href='admin-chat.html?uid=${u.uid}'">
-            View User
-          </button>
-        </div>
-      `;
-    });
-  });
-}
-
-/* =========================================================
-   SUBSCRIPTIONS (USER)
-========================================================= */
-const plans = document.getElementById("plans");
-const status = document.getElementById("status");
-
-if (plans && status) {
-  onValue(ref(db, "subscriptionPlans"), snap => {
-    plans.innerHTML = "";
-    snap.forEach(p => {
-      const pl = p.val();
-      plans.innerHTML += `
-        <div class="card">
-          <h3>${pl.name}</h3>
-          <p>${pl.price}</p>
-          <p>${pl.duration}</p>
-          <button onclick="location.href='user-payment.html?plan=${p.key}'">
-            View
-          </button>
-        </div>
-      `;
-    });
-  });
-}
