@@ -42,9 +42,63 @@ body{
   font-size:13px;
   color:#22c55e;
 }
-.inactive{
-  color:#ef4444;
+.inactive{ color:#ef4444; }
+
+/* subscription badge */
+.badge{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+  margin-top:6px;
 }
+.subscribed{
+  background:#22c55e;
+  color:#022c22;
+}
+.unsubscribed{
+  background:#ef4444;
+  color:#fff;
+}
+
+/* buttons */
+.card-actions{
+  margin-top:10px;
+  display:flex;
+  gap:8px;
+}
+.card-actions button{
+  flex:1;
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.view-btn{ background:#1e293b; color:#fff; }
+.msg-btn{ background:#22c55e; color:#000; }
+
+/* modal */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:99;
+}
+.modal{
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:14px;
+  padding:20px;
+  width:90%;
+  max-width:400px;
+}
+.modal h3{ margin-top:0 }
+.modal p{ margin:8px 0; font-size:14px }
 
 /* bottom nav */
 .bottom-nav{
@@ -83,7 +137,21 @@ body{
 </div>
 
 <div class="users" id="usersList">
-  <!-- USERS LOAD HERE -->
+  <!-- USER CARDS LOAD HERE -->
+</div>
+
+<!-- USER DETAILS MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <h3 id="modalName">User</h3>
+    <p><b>Email:</b> <span id="modalEmail"></span></p>
+    <p><b>Status:</b> <span id="modalOnline"></span></p>
+    <p><b>Subscription:</b> <span id="modalSub"></span></p>
+
+    <button class="msg-btn" style="margin-top:12px" id="modalMessageBtn">
+      Send Message
+    </button>
+  </div>
 </div>
 
 <div class="bottom-nav">
@@ -94,10 +162,30 @@ body{
   <a href="admin-settings.html" class="nav-item"><span>⚙️</span>Settings</a>
 </div>
 
-<!-- Firebase stays separate -->
-<script type="module" src="firebase.js"></script>
+<!-- modal logic only -->
+<script>
+const modal = document.getElementById("userModal");
 
-<!-- All app logic -->
+window.openUserModal = function(user){
+  document.getElementById("modalName").textContent = user.username || "User";
+  document.getElementById("modalEmail").textContent = user.email;
+  document.getElementById("modalOnline").textContent = user.online ? "Online" : "Offline";
+  document.getElementById("modalSub").textContent =
+    user.subscription ? "Subscribed" : "Not Subscribed";
+
+  document.getElementById("modalMessageBtn").onclick = () => {
+    location.href = "admin-chat.html?uid=" + user.uid;
+  };
+
+  modal.style.display = "flex";
+};
+
+modal.addEventListener("click", e => {
+  if (e.target === modal) modal.style.display = "none";
+});
+</script>
+
+<script type="module" src="firebase.js"></script>
 <script type="module" src="app.js"></script>
 
 </body>
