@@ -202,6 +202,95 @@ export async function sendMessage(chatBoxId,msgInputId,fileInputId){
   input.value="";
 }
 
+
+/* ===========================
+   CHAT HELPERS (GLOBAL)
+=========================== */
+
+import {
+  collection, addDoc, onSnapshot,
+  query, orderBy, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+function getChatId(uid1, uid2) {
+  return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+}
+
+/* ===========================
+   USER CHAT LOGIC
+=========================== */
+
+let activeChatId = null;
+
+auth.onAuthStateChanged(user => {
+  if (!user) return;
+
+  const ADMIN_UID = "8XcfFJEoSFMIw9HOJLu0mW2nclp2"; // 🔴 PUT YOUR ADMIN UID
+  activeChatId = getChatId(user.uid, ADMIN_UID);
+
+  // enable typing
+  if (window.messageInput) messageInput.disabled = false;
+
+  const msgRef = collection(db, "chats", activeChatId, "messages");
+  const q = query(msgRef, orderBy("createdAt"));
+
+  onSnapshot(q, snap => {
+    if (!window.messagesBox) return;
+
+    messagesBox.innerHTML = "";
+    snap.forEach(doc => {
+      const m = doc.data();
+      messagesBox.innerHTML += `
+        <div class="${m.sender === user.uid ? "me" : "them"}">
+          ${m.text}
+        </div>
+      `;
+    });
+
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  });
+});
+
+/* ===========================
+   USER SEND MESSAGE
+=========================== */
+
+if (window.sendBtn) {
+  sendBtn.onclick = async () => {
+    if (!messageInput.value.trim() || !activeChatId) return;
+
+    await addDoc(
+      collection(db, "chats", activeChatId, "messages"),
+      {
+        sender: auth.currentUser.uid,
+        text: messageInput.value.trim(),
+        createdAt: serverTimestamp()
+      }
+    );
+
+    messageInput.value = "";
+  };
+}
+
+/* ===========================
+   ADMIN SEND MESSAGE
+=========================== */
+
+window.adminSendMessage = async (userId, text) => {
+  if (!text.trim()) return;
+
+  const chatId = getChatId(auth.currentUser.uid, userId);
+
+  await addDoc(
+    collection(db, "chats", chatId, "messages"),
+    {
+      sender: auth.currentUser.uid,
+      text,
+      createdAt: serverTimestamp()
+    }
+  );
+};
+
 // ==========================
 // 🔹 SUBSCRIPTIONS
 // ==========================
@@ -242,6 +331,35 @@ window.selectSubscription = async function(planId){
   });
   alert("Subscription selected, proceed to payment");
 };
+
+import {
+  collection, addDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+async function savePlan() {
+  const name = planName.value.trim();
+  const price = planPrice.value.trim();
+  const duration = planDuration.value.trim();
+
+  if (!name || !price || !duration) {
+    alert("All fields required");
+    return;
+  }
+
+  await addDoc(collection(db, "subscriptions"), {
+    name,
+    price: Number(price),
+    duration: Number(duration), // days
+    createdAt: serverTimestamp(),
+    active: true
+  });
+
+  alert("Plan saved successfully");
+
+  planName.value = "";
+  planPrice.value = "";
+  planDuration.value = "";
+}
 
 // ==========================
 // 🔹 COURSES (optional)
