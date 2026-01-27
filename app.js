@@ -178,46 +178,75 @@ auth.onAuthStateChanged(user=>{
 
     // load messages
     if(messagesBox){
-      const msgRef = collection(db,"chats",activeChatId,"messages");
-      const q = query(msgRef,orderBy("createdAt"));
+      
+// ==========================
+// 🔹 USER ↔ ADMIN CHAT FIX
+// ==========================
 
-      onSnapshot(q,snap=>{
-        messagesBox.innerHTML="";
-        snap.forEach(doc=>{
-          const m = doc.data();
-          const div = document.createElement("div");
-          div.className = m.sender===user.uid ? "msg user" : "msg admin";
-          div.innerText = m.text || "";
-          messagesBox.appendChild(div);
-          messagesBox.scrollTop = messagesBox.scrollHeight;
-        });
-      });
-    }
+import { auth, db } from "./firebase.js";
+import { collection, addDoc, getDocs, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+function getChatId(uid1, uid2){ return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; }
+
+let activeChatId = null;
+let ADMIN_UID = null;
+
+// DOM
+const messageInput = document.getElementById("messageInput");
+const messagesBox = document.getElementById("chatBox");
+const sendBtn = document.getElementById("sendBtn");
+
+// Detect admin
+async function detectAdmin() {
+  const snap = await getDocs(collection(db,"users"));
+  snap.forEach(d=>{
+    const u=d.data();
+    if(u.role==="admin") ADMIN_UID = d.id;
+  });
+}
+
+auth.onAuthStateChanged(async user=>{
+  if(!user) return;
+
+  await detectAdmin();
+  if(!ADMIN_UID) return console.error("No admin found!");
+
+  activeChatId = getChatId(user.uid, ADMIN_UID);
+
+  // Enable input
+  if(messageInput) messageInput.disabled = false;
+  if(sendBtn) sendBtn.disabled = false;
+
+  // Listen to messages
+  const msgRef = collection(db,"chats",activeChatId,"messages");
+  const q = query(msgRef, orderBy("createdAt"));
+  onSnapshot(q, snap=>{
+    if(!messagesBox) return;
+    messagesBox.innerHTML="";
+    snap.forEach(doc=>{
+      const m = doc.data();
+      const div = document.createElement("div");
+      div.className = m.senderId === user.uid ? "msg user" : "msg admin";
+      div.innerText = m.text || "";
+      messagesBox.appendChild(div);
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+    });
   });
 });
 
-// User sends message
+// Send message
 if(sendBtn){
   sendBtn.onclick = async ()=>{
-    if(!messageInput.value.trim() || !activeChatId) return;
+    const text = messageInput.value.trim();
+    if(!text || !activeChatId) return;
     await addDoc(collection(db,"chats",activeChatId,"messages"),{
-      sender:auth.currentUser.uid,
-      text:messageInput.value.trim(),
-      createdAt:serverTimestamp()
+      senderId: auth.currentUser.uid,
+      text,
+      createdAt: serverTimestamp()
     });
-    messageInput.value="";
+    messageInput.value = "";
   }
 }
-
-// Admin sends message
-window.adminSendMessage = async (userId,text)=>{
-  if(!text.trim()) return;
-  const chatId = getChatId(auth.currentUser.uid,userId);
-  await addDoc(collection(db,"chats",chatId,"messages"),{
-    sender:auth.currentUser.uid,
-    text,
-    createdAt:serverTimestamp()
-  });
 };
 
 // ==========================
