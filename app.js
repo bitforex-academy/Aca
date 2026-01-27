@@ -10,13 +10,14 @@ import { getStorage, ref as stRef, uploadBytes, getDownloadURL } from "https://w
 // 🔹 CONFIGURATION
 // ==========================
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
+  apiKey: "AIzaSyBhClpR0zHg4XYyTsDupLkmDIp_EkIzHEE",
+  authDomain: "bitforex-academy-3a8f4.firebaseapp.com",
+  projectId: "bitforex-academy-3a8f4",
+  storageBucket: "bitforex-academy-3a8f4.appspot.com", // fixed!
+  messagingSenderId: "659879098852",
+  appId: "1:659879098852:web:16545b1980e2ed284a6ff1"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
