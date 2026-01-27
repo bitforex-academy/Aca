@@ -23,6 +23,7 @@ const firebaseConfig = {
   messagingSenderId: "659879098852",
   appId: "1:659879098852:web:16545b1980e2ed284a6ff1"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -101,50 +102,6 @@ window.forgotPassword = async function(email){
 }
 
 // ==========================
-// 🔹 SUBSCRIPTIONS
-// ==========================
-export async function loadSubscriptions(userId,containerId){
-  const container = document.getElementById(containerId);
-  if(!container) return;
-
-  const snap = await getDocs(collection(db,"subscriptions"));
-  container.innerHTML="";
-  snap.forEach(docSnap=>{
-    const sub = docSnap.data();
-    const card = document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
-      <h3>${sub.name}</h3>
-      <p>${sub.description||""}</p>
-      <button onclick="selectSubscription('${docSnap.id}')">Choose Plan</button>
-    `;
-    container.appendChild(card);
-  });
-}
-
-window.selectSubscription = async function(planId){
-  const user = auth.currentUser;
-  if(!user) return alert("Login first");
-  const docSnap = await getDoc(doc(db,"subscriptions",planId));
-  if(!docSnap.exists()) return alert("Plan not found");
-
-  try{
-    await updateDoc(doc(db,"users",user.uid),{
-      subscription:{
-        planId:docSnap.id,
-        planName:docSnap.data().name,
-        status:"pending",
-        start:Date.now(),
-        expires:Date.now()+30*24*60*60*1000
-      }
-    });
-    alert("Subscription selected, proceed to payment");
-  } catch(err){
-    alert("Error updating subscription: "+err.message);
-  }
-};
-
-// ==========================
 // 🔹 USER ↔ ADMIN CHAT
 // ==========================
 function getChatId(uid1, uid2){ return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; }
@@ -166,46 +123,8 @@ async function detectAdmin() {
   });
 }
 
-auth.onAuthStateChanged(user=>{
-  if(!user) return;
-
-  detectAdmin().then(()=>{
-    if(!ADMIN_UID) return;
-    activeChatId = getChatId(user.uid, ADMIN_UID);
-
-    // enable input
-    if(messageInput) messageInput.disabled = false;
-
-    // load messages
-    if(messagesBox){
-      
-// ==========================
-// 🔹 USER ↔ ADMIN CHAT FIX
-// ==========================
-
-import { auth, db } from "./firebase.js";
-import { collection, addDoc, getDocs, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-function getChatId(uid1, uid2){ return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; }
-
-let activeChatId = null;
-let ADMIN_UID = null;
-
-// DOM
-const messageInput = document.getElementById("messageInput");
-const messagesBox = document.getElementById("chatBox");
-const sendBtn = document.getElementById("sendBtn");
-
-// Detect admin
-async function detectAdmin() {
-  const snap = await getDocs(collection(db,"users"));
-  snap.forEach(d=>{
-    const u=d.data();
-    if(u.role==="admin") ADMIN_UID = d.id;
-  });
-}
-
-auth.onAuthStateChanged(async user=>{
+// Detect user login and start chat
+onAuthStateChanged(auth, async user=>{
   if(!user) return;
 
   await detectAdmin();
@@ -247,6 +166,16 @@ if(sendBtn){
     messageInput.value = "";
   }
 }
+
+// Admin sends message (use this in admin page)
+window.adminSendMessage=async(userId,text)=>{
+  if(!text.trim()) return;
+  const chatId=getChatId(auth.currentUser.uid,userId);
+  await addDoc(collection(db,"chats",chatId,"messages"),{
+    senderId:auth.currentUser.uid,
+    text,
+    createdAt:serverTimestamp()
+  });
 };
 
 // ==========================
