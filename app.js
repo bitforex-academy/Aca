@@ -23,7 +23,6 @@ const firebaseConfig = {
   messagingSenderId: "659879098852",
   appId: "1:659879098852:web:16545b1980e2ed284a6ff1"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -129,16 +128,20 @@ window.selectSubscription = async function(planId){
   const docSnap = await getDoc(doc(db,"subscriptions",planId));
   if(!docSnap.exists()) return alert("Plan not found");
 
-  await updateDoc(doc(db,"users",user.uid),{
-    subscription:{
-      planId:docSnap.id,
-      planName:docSnap.data().name,
-      status:"pending",
-      start:Date.now(),
-      expires:Date.now()+30*24*60*60*1000
-    }
-  });
-  alert("Subscription selected, proceed to payment");
+  try{
+    await updateDoc(doc(db,"users",user.uid),{
+      subscription:{
+        planId:docSnap.id,
+        planName:docSnap.data().name,
+        status:"pending",
+        start:Date.now(),
+        expires:Date.now()+30*24*60*60*1000
+      }
+    });
+    alert("Subscription selected, proceed to payment");
+  } catch(err){
+    alert("Error updating subscription: "+err.message);
+  }
 };
 
 // ==========================
@@ -148,6 +151,11 @@ function getChatId(uid1, uid2){ return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2
 
 let activeChatId = null;
 let ADMIN_UID = null;
+
+// DOM refs
+const messageInput = document.getElementById("messageInput");
+const messagesBox = document.getElementById("chatBox");
+const sendBtn = document.getElementById("sendBtn");
 
 // Auto detect admin UID
 async function detectAdmin() {
@@ -162,32 +170,35 @@ auth.onAuthStateChanged(user=>{
   if(!user) return;
 
   detectAdmin().then(()=>{
+    if(!ADMIN_UID) return;
     activeChatId = getChatId(user.uid, ADMIN_UID);
 
-    // enable message input if exists
-    if(window.messageInput) messageInput.disabled = false;
+    // enable input
+    if(messageInput) messageInput.disabled = false;
 
-    const msgRef = collection(db,"chats",activeChatId,"messages");
-    const q = query(msgRef,orderBy("createdAt"));
+    // load messages
+    if(messagesBox){
+      const msgRef = collection(db,"chats",activeChatId,"messages");
+      const q = query(msgRef,orderBy("createdAt"));
 
-    onSnapshot(q,snap=>{
-      if(!window.messagesBox) return;
-      messagesBox.innerHTML="";
-      snap.forEach(doc=>{
-        const m=doc.data();
-        const div=document.createElement("div");
-        div.className=m.sender===user.uid?"msg me":"msg them";
-        div.innerText=m.text||"";
-        messagesBox.appendChild(div);
-        messagesBox.scrollTop=messagesBox.scrollHeight;
+      onSnapshot(q,snap=>{
+        messagesBox.innerHTML="";
+        snap.forEach(doc=>{
+          const m = doc.data();
+          const div = document.createElement("div");
+          div.className = m.sender===user.uid ? "msg user" : "msg admin";
+          div.innerText = m.text || "";
+          messagesBox.appendChild(div);
+          messagesBox.scrollTop = messagesBox.scrollHeight;
+        });
       });
-    });
+    }
   });
 });
 
 // User sends message
-if(window.sendBtn){
-  sendBtn.onclick=async ()=>{
+if(sendBtn){
+  sendBtn.onclick = async ()=>{
     if(!messageInput.value.trim() || !activeChatId) return;
     await addDoc(collection(db,"chats",activeChatId,"messages"),{
       sender:auth.currentUser.uid,
@@ -199,9 +210,9 @@ if(window.sendBtn){
 }
 
 // Admin sends message
-window.adminSendMessage=async(userId,text)=>{
+window.adminSendMessage = async (userId,text)=>{
   if(!text.trim()) return;
-  const chatId=getChatId(auth.currentUser.uid,userId);
+  const chatId = getChatId(auth.currentUser.uid,userId);
   await addDoc(collection(db,"chats",chatId,"messages"),{
     sender:auth.currentUser.uid,
     text,
@@ -212,6 +223,8 @@ window.adminSendMessage=async(userId,text)=>{
 // ==========================
 // 🔹 PLAN MANAGEMENT (ADMIN)
 // ==========================
+let editId = null;
+
 export async function loadPlans(containerId){
   const container = document.getElementById(containerId);
   if(!container) return;
@@ -233,19 +246,23 @@ export async function loadPlans(containerId){
   });
 }
 
-window.savePlan=async()=>{
-  const name=planName.value.trim();
-  const price=planPrice.value.trim();
-  const duration=planDuration.value.trim();
-  if(!name||!price||!duration) return alert("All fields required");
+window.savePlan = async ()=>{
+  const name = planName.value.trim();
+  const price = planPrice.value.trim();
+  const duration = planDuration.value.trim();
+  if(!name || !price || !duration) return alert("All fields required");
 
-  if(editId){
-    await updateDoc(doc(db,"plans",editId),{name,price,duration});
-  }else{
-    await addDoc(collection(db,"plans"),{name,price,duration});
+  try{
+    if(editId){
+      await updateDoc(doc(db,"plans",editId),{name, price: Number(price), duration: Number(duration)});
+    } else{
+      await addDoc(collection(db,"plans"),{name, price: Number(price), duration: Number(duration)});
+    }
+    planModal.style.display="none";
+    loadPlans("plansBox");
+  } catch(err){
+    alert("Error saving plan: "+err.message);
   }
-  planModal.style.display="none";
-  loadPlans("plansBox");
 };
 
 // ==========================
