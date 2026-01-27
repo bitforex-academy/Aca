@@ -27,7 +27,7 @@ const storage = getStorage(app);
 // 🔹 USER AUTH FUNCTIONS
 // ==========================
 
-// Register
+// REGISTER
 window.registerUser = async function(e){
   e.preventDefault();
   const username = document.getElementById("regUsername")?.value.trim();
@@ -49,25 +49,24 @@ window.registerUser = async function(e){
       role:"user",
       active:false,
       subscription:null,
-      onlin:false,
       createdAt:serverTimestamp()
     });
     msg.className="success"; msg.innerText="Account created!";
   } catch(err){
     msg.className="error"; msg.innerText=err.message;
   }
-}
+};
 
-// Login
+// LOGIN
 window.loginUser = async function(e){
   e.preventDefault();
   const email = document.getElementById("loginEmail")?.value.trim();
   const password = document.getElementById("loginPassword")?.value.trim();
   const msg = document.getElementById("login-message");
+  if(!email || !password){ msg.className="error"; msg.innerText="Email and password required"; return; }
 
   try{
     await signInWithEmailAndPassword(auth,email,password);
-    msg.className="success"; msg.innerText="Login successful!";
     const user = auth.currentUser;
     const docSnap = await getDoc(doc(db,"users",user.uid));
     if(docSnap.exists()){
@@ -77,15 +76,15 @@ window.loginUser = async function(e){
   } catch(err){
     msg.className="error"; msg.innerText=err.message;
   }
-}
+};
 
-// Logout
+// LOGOUT
 window.logoutUser = async function(){
   await signOut(auth);
   window.location.href="login.html";
-}
+};
 
-// Forgot Password
+// FORGOT PASSWORD
 window.forgotPassword = async function(email){
   if(!email) return alert("Enter your email");
   try{
@@ -94,15 +93,14 @@ window.forgotPassword = async function(email){
   } catch(err){
     alert(err.message);
   }
-}
+};
 
 // ==========================
 // 🔹 ADMIN USERS MANAGEMENT
 // ==========================
-export async function loadAdminUsers(filter="all"){
+window.loadAdminUsers = async function(filter="all"){
   const container = document.getElementById("adminUsersTable");
   if(!container) return;
-
   const usersSnap = await getDocs(collection(db,"users"));
   if(usersSnap.empty){ container.innerHTML="<p>No users found</p>"; return; }
 
@@ -124,8 +122,9 @@ export async function loadAdminUsers(filter="all"){
     `;
     container.appendChild(card);
   });
-}
+};
 
+// VIEW USER
 window.viewUser = async function(uid){
   const docSnap = await getDoc(doc(db,"users",uid));
   if(!docSnap.exists()) return alert("User not found");
@@ -143,86 +142,72 @@ window.viewUser = async function(uid){
   `;
   popup.addEventListener("click",e=>{ if(e.target===popup) popup.remove(); });
   document.body.appendChild(popup);
-}
+};
 
-// ==========================
-// 🔹 CHAT LOGIC (USER & ADMIN)
-// ==========================
-import { collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-function getChatId(uid1, uid2) {
-  return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
-}
-
-let activeChatId = null;
-
-// USER CHAT
-auth.onAuthStateChanged(user=>{
-  if(!user) return;
-  const ADMIN_UID = "8XcfFJEoSFMIw9HOJLu0mW2nclp2";
-  activeChatId = getChatId(user.uid, ADMIN_UID);
-
-  const messagesBox = document.getElementById("chatBox");
-  const messageInput = document.getElementById("messageInput");
-  const sendBtn = document.getElementById("sendBtn");
-  const imageInput = document.getElementById("imageInput");
-  if(!messagesBox || !messageInput || !sendBtn) return;
-
-  // Load messages
-  const msgRef = collection(db,"chats",activeChatId,"messages");
-  const q = query(msgRef, orderBy("createdAt"));
-  onSnapshot(q, snap=>{
-    messagesBox.innerHTML="";
-    snap.forEach(doc=>{
-      const m = doc.data();
-      const div = document.createElement("div");
-      div.className = "msg " + (m.sender===user.uid?"user":"admin");
-      if(m.type==="image"){
-        const img = document.createElement("img");
-        img.src = m.url;
-        div.appendChild(img);
-      } else div.innerText = m.text;
-      messagesBox.appendChild(div);
-    });
-    messagesBox.scrollTop = messagesBox.scrollHeight;
-  });
-
-  // Send message
-  sendBtn.onclick = async ()=>{
-    let text = messageInput.value.trim();
-    if(!text && (!imageInput || !imageInput.files.length)) return;
-
-    let payload = { sender:user.uid, type:"text", text, createdAt:serverTimestamp() };
-
-    if(imageInput && imageInput.files.length>0){
-      const file = imageInput.files[0];
-      const path = `chats/${activeChatId}/${Date.now()}_${file.name}`;
-      const storageRef = stRef(storage,path);
-      await uploadBytes(storageRef,file);
-      const url = await getDownloadURL(storageRef);
-      payload = { sender:user.uid, type:"image", url, createdAt:serverTimestamp() };
-      imageInput.value="";
-    }
-
-    await addDoc(collection(db,"chats",activeChatId,"messages"),payload);
-    messageInput.value="";
-  };
-});
-
-// ADMIN SEND MESSAGE
-window.startAdminChat = (userId)=>{
-  const ADMIN_UID = auth.currentUser.uid;
-  activeChatId = getChatId(ADMIN_UID, userId);
+// START ADMIN CHAT
+window.startAdminChat = function(uid){
+  localStorage.setItem("chatWith",uid);
   window.location.href="admin-chat.html";
 };
 
 // ==========================
+// 🔹 CHAT LOGIC
+// ==========================
+function getChatId(uid1,uid2){ return uid1<uid2?`${uid1}_${uid2}`:`${uid2}_${uid1}`; }
+
+auth.onAuthStateChanged(user=>{
+  if(!user) return;
+  const ADMIN_UID="8XcfFJEoSFMIw9HOJLu0mW2nclp2";
+  const chatBox = document.getElementById("chatBox");
+  const msgInput = document.getElementById("messageInput");
+  const imgInput = document.getElementById("imageInput");
+  const sendBtn = document.getElementById("sendBtn");
+
+  const chatId = getChatId(user.uid,ADMIN_UID);
+  if(chatBox){
+    const q = query(collection(db,"chats",chatId,"messages"), orderBy("createdAt"));
+    onSnapshot(q, snap=>{
+      chatBox.innerHTML="";
+      snap.forEach(doc=>{
+        const m = doc.data();
+        const div = document.createElement("div");
+        div.className="msg "+(m.sender===user.uid?"user":"admin");
+        if(m.type==="image") div.innerHTML=`<img src="${m.url}">`;
+        else div.innerText=m.text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    });
+  }
+
+  if(sendBtn && msgInput){
+    sendBtn.onclick = async ()=>{
+      if(!msgInput.value.trim() && (!imgInput || !imgInput.files.length)) return;
+
+      let payload;
+      if(imgInput && imgInput.files.length>0){
+        const f = imgInput.files[0];
+        const path = `chats/${chatId}/${Date.now()}_${f.name}`;
+        const storageRef = stRef(storage,path);
+        await uploadBytes(storageRef,f);
+        const url = await getDownloadURL(storageRef);
+        payload={sender:user.uid,type:"image",url,createdAt:serverTimestamp()};
+        imgInput.value="";
+      } else {
+        payload={sender:user.uid,type:"text",text:msgInput.value.trim(),createdAt:serverTimestamp()};
+      }
+      await addDoc(collection(db,"chats",chatId,"messages"),payload);
+      msgInput.value="";
+    };
+  }
+});
+
+// ==========================
 // 🔹 SUBSCRIPTIONS
 // ==========================
-export async function loadSubscriptions(userId,containerId){
+window.loadSubscriptions = async function(containerId){
   const container = document.getElementById(containerId);
   if(!container) return;
-
   const snap = await getDocs(collection(db,"subscriptions"));
   container.innerHTML="";
   snap.forEach(docSnap=>{
@@ -236,14 +221,13 @@ export async function loadSubscriptions(userId,containerId){
     `;
     container.appendChild(card);
   });
-}
+};
 
-window.selectSubscription = async (planId)=>{
+window.selectSubscription = async function(planId){
   const user = auth.currentUser;
   if(!user) return alert("Login first");
   const docSnap = await getDoc(doc(db,"subscriptions",planId));
   if(!docSnap.exists()) return alert("Plan not found");
-
   await updateDoc(doc(db,"users",user.uid),{
     subscription:{
       planId:docSnap.id,
@@ -255,33 +239,3 @@ window.selectSubscription = async (planId)=>{
   });
   alert("Subscription selected, proceed to payment");
 };
-
-// ==========================
-// 🔹 COURSES
-// ==========================
-export async function loadCourses(containerId){
-  const container = document.getElementById(containerId);
-  if(!container) return;
-  const snap = await getDocs(collection(db,"courses"));
-  container.innerHTML="";
-  snap.forEach(docSnap=>{
-    const course = docSnap.data();
-    const card = document.createElement("div");
-    card.className="card";
-    card.innerHTML=`
-      <h3>${course.title}</h3>
-      <p>${course.description||""}</p>
-    `;
-    container.appendChild(card);
-  });
-}
-
-// ==========================
-// 🔹 INITIALIZATION
-// ==========================
-onAuthStateChanged(auth,user=>{
-  if(user){
-    const uid=user.uid;
-    updateDoc(doc(db,"users",uid),{onlin:true});
-  }
-});
