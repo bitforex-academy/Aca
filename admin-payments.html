@@ -2,72 +2,85 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Payments</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>Admin Pending Payments | BitForex Academy</title>
 <style>
+*{box-sizing:border-box;margin:0;padding:0}
 body{
-  margin:0;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   background:#0b1220;
   color:#fff;
-  height:100vh;
-  overflow:hidden;
+  min-height:100vh;
 }
+
+/* ===== TOP BAR ===== */
 .topbar{
-  height:60px;
-  padding:15px;
+  height:70px;
   background:#020617;
   border-bottom:1px solid #1e293b;
   display:flex;
   align-items:center;
+  padding:0 15px;
 }
-.payments{
-  position:fixed;
-  top:60px;
-  bottom:70px;
-  left:0;
-  right:0;
-  overflow-y:auto;
+.title{
+  font-weight:bold;
+  color:#22c55e;
+}
+
+/* ===== CONTAINER ===== */
+.container{
   padding:15px;
+  padding-bottom:110px;
+}
+
+/* ===== TABLE / LIST ===== */
+.payment-list{
+  display:grid;
+  gap:12px;
 }
 .payment-card{
   background:#020617;
   border:1px solid #1e293b;
   border-radius:12px;
-  padding:12px;
-  margin-bottom:10px;
+  padding:15px;
 }
-.actions{
+.payment-card h4{
+  font-size:15px;
+  margin-bottom:6px;
+  color:#e5e7eb;
+}
+.payment-card p{
+  font-size:13px;
+  color:#94a3b8;
+  margin-bottom:8px;
+}
+.payment-actions{
   display:flex;
-  gap:10px;
-  margin-top:10px;
+  gap:8px;
+}
+.payment-actions button{
+  flex:1;
+  border:none;
+  padding:8px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
 }
 .approve{
-  flex:1;
   background:#22c55e;
   color:#000;
-  border:none;
-  padding:8px;
-  border-radius:8px;
-  font-weight:bold;
 }
 .reject{
-  flex:1;
   background:#ef4444;
   color:#fff;
-  border:none;
-  padding:8px;
-  border-radius:8px;
-  font-weight:bold;
 }
 
-/* bottom nav */
+/* ===== BOTTOM NAV ===== */
 .bottom-nav{
   position:fixed;
   bottom:0;
   width:100%;
-  height:70px;
+  height:80px;
   background:#020617;
   border-top:1px solid #1e293b;
   display:flex;
@@ -77,42 +90,59 @@ body{
 .nav-item{
   text-decoration:none;
   color:#94a3b8;
-  font-size:12px;
+  font-size:11px;
   text-align:center;
 }
 .nav-item span{
   display:block;
-  font-size:18px;
+  font-size:20px;
   color:#22c55e;
-}
-.nav-item.active{
-  color:#22c55e;
-  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
+<!-- TOP BAR -->
 <div class="topbar">
-  <h3>Pending Payments</h3>
+  <div class="title">⏳ Pending Payments</div>
 </div>
 
-<div class="payments" id="paymentsList">
-  <!-- Payments load here -->
+<div class="container">
+  <div class="payment-list">
+    <!-- Placeholder cards, will be replaced by script -->
+    <div class="payment-card">
+      <h4>User Name</h4>
+      <p>Amount: ₦0</p>
+      <p>Plan: Plan Name</p>
+      <p>Date: 01/01/2026</p>
+      <div class="payment-actions">
+        <button class="approve">Approve</button>
+        <button class="reject">Reject</button>
+      </div>
+    </div>
+    <div class="payment-card">
+      <h4>User Name</h4>
+      <p>Amount: ₦0</p>
+      <p>Plan: Plan Name</p>
+      <p>Date: 01/01/2026</p>
+      <div class="payment-actions">
+        <button class="approve">Approve</button>
+        <button class="reject">Reject</button>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <a href="admin-dashboard.html" class="nav-item"><span>🏠</span>Home</a>
+  <a href="admin-dashboard.html" class="nav-item"><span>🏠</span>Dashboard</a>
+  <a href="admin-payments.html" class="nav-item"><span>💳</span>Payments</a>
   <a href="admin-users.html" class="nav-item"><span>👥</span>Users</a>
-  <a href="admin-payments.html" class="nav-item active"><span>💳</span>Payments</a>
-  <a href="admin-chat.html" class="nav-item"><span>💬</span>Messages</a>
+  <a href="admin-chat.html" class="nav-item"><span>💬</span>Chat</a>
   <a href="admin-settings.html" class="nav-item"><span>⚙️</span>Settings</a>
 </div>
 
-<!-- Firebase + App -->
-<script type="module" src="firebase.js"></script>
-<script type="module" src="app.js"></script>
-
+<script type="module" src="admin.js"></script>
 </body>
 </html>
