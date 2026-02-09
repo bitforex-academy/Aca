@@ -2,84 +2,139 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Payment Settings | Bitforex Academy</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>Admin | Payment Methods</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0b1220;
-  color:#fff;
-}
-.topbar{
-  background:#020617;
-  padding:15px;
-  border-bottom:1px solid #1e293b;
-  display:flex;
-  align-items:center;
-}
-.topbar button{
-  background:none;
-  border:none;
-  color:#22c55e;
-  font-size:16px;
-  margin-right:10px;
-}
-.content{
-  padding:20px;
-}
-.card{
-  background:#1e293b;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:20px;
-}
-input, textarea, button{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  border-radius:6px;
-  border:none;
-}
-button{
-  background:#22c55e;
-  font-weight:bold;
-}
+body{margin:0;font-family:Arial;background:#0b1220;color:#fff;min-height:100vh;}
+.topbar{height:70px;padding:15px;background:#020617;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between}
+.topbar h3{color:#22c55e;font-weight:bold;}
+.add-btn{background:#22c55e;color:#000;border:none;padding:8px 12px;border-radius:8px;font-weight:bold;cursor:pointer}
+.container{padding:15px;padding-bottom:110px;}
+.table{width:100%;border-collapse:collapse;margin-top:15px;}
+.table th, .table td{border:1px solid #1e293b;padding:10px;text-align:left;}
+.table th{color:#94a3b8;background:#020617;}
+.table td{background:#0b1220;}
+.table td button{margin-right:5px;padding:5px 8px;border:none;border-radius:5px;cursor:pointer;}
+.edit-btn{background:#0ea5e9;color:#fff;}
+.delete-btn{background:#ef4444;color:#fff;}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
+.modal-box{background:#020617;padding:20px;border-radius:12px;width:90%;max-width:400px}
+.modal-box input{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:none;background:#0b1220;color:#fff}
+.save-btn{margin-top:15px;width:100%;padding:10px;border:none;border-radius:8px;background:#22c55e;font-weight:bold;cursor:pointer}
+.bottom-nav{position:fixed;bottom:0;width:100%;height:80px;background:#020617;border-top:1px solid #1e293b;display:flex;justify-content:space-around;align-items:center}
+.nav-item{text-decoration:none;color:#94a3b8;font-size:11px;text-align:center}
+.nav-item span{display:block;font-size:20px;color:#22c55e}
 </style>
 </head>
-
 <body>
 
 <div class="topbar">
-  <button onclick="history.back()">⬅ Back</button>
-  <b>Payment Settings</b>
+  <h3>💳 Payment Details</h3>
+  <button class="add-btn" onclick="openPaymentModal()">+ Add Payment</button>
 </div>
 
-<div class="content">
-
-  <!-- Bank Payment -->
-  <div class="card">
-    <h3>🏦 Bank Payment</h3>
-    <input id="bankName" placeholder="Bank Name">
-    <input id="accountName" placeholder="Account Name">
-    <input id="accountNumber" placeholder="Account Number">
-    <button id="saveBank">Save Bank Details</button>
-  </div>
-
-  <!-- Crypto Payment -->
-  <div class="card">
-    <h3>₿ BTC Payment</h3>
-    <input id="btcAddress" placeholder="BTC Wallet Address">
-    <textarea id="btcNote" placeholder="Network / Notes"></textarea>
-    <button id="saveBTC">Save BTC Details</button>
-  </div>
-
+<div class="container">
+  <table class="table" id="paymentsTable">
+    <thead>
+      <tr>
+        <th>Bank / Platform</th>
+        <th>Account Name / ID</th>
+        <th>Account Number / Details</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- payment methods load here -->
+    </tbody>
+  </table>
 </div>
 
-<!-- Firebase + App -->
-<script type="module" src="firebase.js"></script>
-<script type="module" src="app.js"></script>
+<!-- Modal -->
+<div class="modal" id="paymentModal">
+  <div class="modal-box">
+    <h4 id="modalTitle">Add Payment Method</h4>
+    <input id="payPlatform" placeholder="Bank or Platform name">
+    <input id="payName" placeholder="Account Name or ID">
+    <input id="payDetails" placeholder="Account Number / Details">
+    <button class="save-btn" onclick="savePayment()">Save</button>
+  </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+  <a href="admin-dashboard.html" class="nav-item"><span>🏠</span>Dashboard</a>
+  <a href="admin-payments.html" class="nav-item"><span>💳</span>Payments</a>
+  <a href="admin-users.html" class="nav-item"><span>👥</span>Users</a>
+  <a href="admin-chat.html" class="nav-item"><span>💬</span>Chat</a>
+  <a href="admin-settings.html" class="nav-item"><span>⚙️</span>Settings</a>
+</div>
+
+<script type="module" src="admin.js"></script>
+<script type="module">
+import { db } from "./firebase.js";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+let editId = null;
+const tableBody = document.getElementById("paymentsTable").querySelector("tbody");
+const modal = document.getElementById("paymentModal");
+const payPlatform = document.getElementById("payPlatform");
+const payName = document.getElementById("payName");
+const payDetails = document.getElementById("payDetails");
+
+function openPaymentModal(id=null, platform="", name="", details=""){
+  editId = id;
+  payPlatform.value = platform;
+  payName.value = name;
+  payDetails.value = details;
+  modal.style.display = "flex";
+}
+
+async function savePayment(){
+  const platform = payPlatform.value.trim();
+  const name = payName.value.trim();
+  const details = payDetails.value.trim();
+  if(!platform || !name || !details) return alert("All fields required");
+
+  try{
+    if(editId){
+      await updateDoc(doc(db,"paymentMethods",editId),{platform,name,details});
+    } else{
+      await addDoc(collection(db,"paymentMethods"),{platform,name,details});
+    }
+    modal.style.display="none";
+    loadPayments();
+  } catch(err){
+    alert("Error saving payment: "+err.message);
+  }
+}
+
+async function loadPayments(){
+  tableBody.innerHTML="";
+  const snap = await getDocs(collection(db,"paymentMethods"));
+  snap.forEach(d=>{
+    const p = d.data();
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.platform}</td>
+      <td>${p.name}</td>
+      <td>${p.details}</td>
+      <td>
+        <button class="edit-btn" onclick="openPaymentModal('${d.id}','${p.platform}','${p.name}','${p.details}')">Edit</button>
+        <button class="delete-btn" onclick="deletePayment('${d.id}')">Delete</button>
+      </td>
+    `;
+    tableBody.appendChild(tr);
+  });
+}
+
+async function deletePayment(id){
+  if(!confirm("Are you sure?")) return;
+  await deleteDoc(doc(db,"paymentMethods",id));
+  loadPayments();
+}
+
+loadPayments();
+</script>
 
 </body>
 </html>
