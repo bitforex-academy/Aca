@@ -2,71 +2,53 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Chat | BiTForeX Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>Admin Chat | BitForex Academy</title>
 
 <style>
-/* ========== GLOBAL ========== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: Arial, sans-serif;
-  background: #0b1220;
-  color: #fff;
-  height: 100vh;
-  overflow: hidden;
-}
-/* ========== NAVBAR ========== */
-.navbar {
-  position: fixed;
-  top: 0;
-  width: 100%;
+body { font-family: Arial, sans-serif; background: #0b1220; color: #fff; min-height: 100vh; overflow: hidden; }
+
+/* ===== TOP BAR ===== */
+.topbar {
   height: 70px;
   background: #020617;
   border-bottom: 1px solid #1e293b;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  z-index: 10;
+  padding: 0 15px;
+  font-weight: bold;
+  color: #22c55e;
 }
-.brand { display: flex; align-items: center; gap: 10px; }
-.logo-circle img { width: 38px; height: 38px; border-radius: 50%; }
-.logo-text { font-weight: bold; color: #22c55e; }
-.nav a { color: #94a3b8; text-decoration: none; margin-left: 15px; font-size: 14px; }
-.nav a.active { color: #22c55e; font-weight: bold; }
 
-/* ========== MAIN LAYOUT ========== */
+/* ===== MAIN LAYOUT ===== */
 .container {
-  position: fixed;
-  top: 70px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 15px;
+  display: flex;
+  height: calc(100vh - 70px);
+  gap: 12px;
+  padding: 12px;
 }
-.chat-wrap { display: flex; height: 100%; gap: 12px; }
 
-/* ========== USERS LIST ========== */
-.contacts {
+/* ===== USERS LIST ===== */
+.users-list {
   width: 260px;
   background: #020617;
   border: 1px solid #1e293b;
   border-radius: 12px;
-  padding: 12px;
   overflow-y: auto;
+  padding: 10px;
 }
-.contacts h3 { margin-bottom: 10px; font-size: 15px; }
-.contact-list { list-style: none; padding: 0; margin: 0; }
-.contact-list li {
+.users-list h3 { margin-bottom: 10px; font-size: 15px; }
+.user-item {
   padding: 10px;
   border-radius: 8px;
   cursor: pointer;
   background: #0b1220;
   margin-bottom: 6px;
 }
-.contact-list li:hover { background: #1e293b; }
+.user-item:hover { background: #1e293b; }
 
-/* ========== CHAT PANEL ========== */
+/* ===== CHAT PANEL ===== */
 .chat-panel {
   flex: 1;
   display: flex;
@@ -84,7 +66,7 @@ body {
 }
 .messages {
   flex: 1;
-  padding: 15px;
+  padding: 12px;
   overflow-y: auto;
 }
 .msg {
@@ -98,7 +80,7 @@ body {
 .msg.user { background: #1e293b; }
 .msg img { max-width: 200px; border-radius: 8px; margin-top: 6px; }
 
-/* ========== INPUT AREA ========== */
+/* ===== INPUT AREA ===== */
 .chat-input {
   display: flex;
   align-items: center;
@@ -113,7 +95,7 @@ body {
   border: none;
   outline: none;
 }
-.emoji-btn, .btn {
+.chat-input button {
   background: #22c55e;
   border: none;
   padding: 10px 16px;
@@ -122,128 +104,48 @@ body {
   cursor: pointer;
   color: #000;
 }
-.emoji-btn:disabled, .btn:disabled, .chat-input input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+
+/* ===== RESPONSIVE ===== */
+@media(max-width: 768px){
+  .container { flex-direction: column; }
+  .users-list { width: 100%; height: 150px; overflow-x: auto; display: flex; gap: 6px; padding: 6px; }
+  .user-item { min-width: 120px; margin-bottom: 0; }
+  .chat-panel { flex: 1; }
 }
 </style>
 </head>
-
 <body>
 
-<header class="navbar">
-  <div class="brand">
-    <div class="logo-circle"><img src="logo.jpg" alt="logo"></div>
-    <span class="logo-text">BiTForeX Admin</span>
-  </div>
-  <nav class="nav">
-    <a href="admin.html">Dashboard</a>
-    <a href="admin-users.html">Users</a>
-    <a href="admin-payments.html">Payments</a>
-    <a href="admin-chat.html" class="active">Chat Inbox</a>
-    <a href="login.html">Logout</a>
-  </nav>
-</header>
+<div class="topbar">💬 Admin Chat</div>
 
-<main class="container">
-  <div class="chat-wrap">
-    <!-- USERS -->
-    <aside class="contacts">
-      <h3>Users</h3>
-      <ul class="contact-list" id="usersList"></ul>
-    </aside>
+<div class="container">
+  <!-- USERS LIST -->
+  <aside class="users-list">
+    <h3>Users</h3>
+    <div class="user-item">User 1</div>
+    <div class="user-item">User 2</div>
+    <div class="user-item">User 3</div>
+    <!-- Dynamic list will be added via JS -->
+  </aside>
 
-    <!-- CHAT -->
-    <section class="chat-panel">
-      <div class="chat-header" id="adminChatTitle">Select a user</div>
-      <div class="messages" id="adminMessages"></div>
+  <!-- CHAT PANEL -->
+  <section class="chat-panel">
+    <div class="chat-header" id="chatTitle">Select a user</div>
+    <div class="messages" id="chatMessages">
+      <!-- Chat messages will appear here -->
+    </div>
 
-      <div class="chat-input">
-        <input type="text" id="adminMessageInput" placeholder="Type a message…" disabled>
-        <button id="adminSendBtn" class="btn" disabled>Send</button>
-      </div>
-    </section>
-  </div>
-</main>
+    <div class="chat-input">
+      <label>
+        <button type="button">📷</button>
+        <input type="file" id="chatImage" accept="image/*" hidden>
+      </label>
+      <input type="text" id="chatText" placeholder="Type a message..." disabled>
+      <button id="chatSend" disabled>Send</button>
+    </div>
+  </section>
+</div>
 
-<script type="module">
-import { auth, db } from "./firebase.js";
-import { collection, doc, addDoc, query, orderBy, onSnapshot, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-// DOM
-const usersList = document.getElementById("usersList");
-const messagesBox = document.getElementById("adminMessages");
-const msgInput = document.getElementById("adminMessageInput");
-const sendBtn = document.getElementById("adminSendBtn");
-
-// Current chat
-let activeUserId = null;
-
-// Load users into chat
-async function loadAdminChatUsers() {
-  usersList.innerHTML = `<p class="muted">Loading users...</p>`;
-  const snap = await getDocs(collection(db, "users"));
-  usersList.innerHTML = "";
-
-  snap.forEach(d => {
-    const u = d.data();
-    if(u.role === "admin") return;
-    const li = document.createElement("li");
-    li.textContent = u.username || u.email;
-    li.style.cursor = "pointer";
-    li.onclick = () => openChat(d.id, u.username || u.email);
-    usersList.appendChild(li);
-  });
-}
-
-// Open chat
-function openChat(userId, username) {
-  activeUserId = userId;
-  document.getElementById("adminChatTitle").textContent = username;
-  messagesBox.innerHTML = "";
-  msgInput.disabled = false;
-  sendBtn.disabled = false;
-
-  const q = query(collection(db, "messages"), orderBy("createdAt"));
-  onSnapshot(q, snap => {
-    messagesBox.innerHTML = "";
-    snap.forEach(d => {
-      const m = d.data();
-      if ((m.senderId === auth.currentUser.uid && m.receiverId === userId) ||
-          (m.senderId === userId && m.receiverId === auth.currentUser.uid)) {
-        const div = document.createElement("div");
-        div.textContent = m.text || "";
-        div.className = m.senderId === auth.currentUser.uid ? "msg admin" : "msg user";
-
-        if (m.imageUrl) {
-          const img = document.createElement("img");
-          img.src = m.imageUrl;
-          div.appendChild(img);
-        }
-
-        messagesBox.appendChild(div);
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-      }
-    });
-  });
-}
-
-// Send message
-sendBtn?.addEventListener("click", async () => {
-  const text = msgInput.value.trim();
-  if(!text || !activeUserId) return;
-  await addDoc(collection(db, "messages"), {
-    senderId: auth.currentUser.uid,
-    receiverId: activeUserId,
-    text,
-    imageUrl: null,
-    createdAt: serverTimestamp()
-  });
-  msgInput.value = "";
-});
-
-loadAdminChatUsers();
-</script>
-
+<script type="module" src="admin.js"></script>
 </body>
 </html>
