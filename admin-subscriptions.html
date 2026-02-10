@@ -2,112 +2,203 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin | Subscription Plans</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>Admin Subscriptions | BitForex Academy</title>
 <style>
-body{margin:0;font-family:Arial;background:#0b1220;color:#fff}
-.topbar{height:60px;padding:15px;background:#020617;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
-.add-btn{background:#22c55e;color:#000;border:none;padding:8px 12px;border-radius:8px;font-weight:bold}
-.content{padding:15px;padding-bottom:90px}
-.plan-card{background:#020617;border:1px solid #1e293b;border-radius:12px;padding:15px;margin-bottom:12px}
-.actions{display:flex;gap:10px;margin-top:10px}
-.edit{flex:1;background:#0ea5e9;border:none;padding:8px;border-radius:8px;font-weight:bold}
-.delete{flex:1;background:#ef4444;border:none;padding:8px;border-radius:8px;font-weight:bold;color:#fff}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
-.modal-box{background:#020617;padding:20px;border-radius:12px;width:90%;max-width:400px}
-input{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:none;background:#0b1220;color:#fff}
-.save{margin-top:15px;width:100%;padding:10px;border:none;border-radius:8px;background:#22c55e;font-weight:bold}
-.bottom-nav{position:fixed;bottom:0;width:100%;height:70px;background:#020617;border-top:1px solid #1e293b;display:flex;justify-content:space-around;align-items:center}
-.nav-item{text-decoration:none;color:#94a3b8;font-size:12px;text-align:center}
-.nav-item span{display:block;font-size:18px;color:#22c55e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial, sans-serif;
+  background:#0b1220;
+  color:#fff;
+  min-height:100vh;
+}
+
+/* ===== TOP BAR ===== */
+.topbar{
+  height:70px;
+  background:#020617;
+  border-bottom:1px solid #1e293b;
+  display:flex;
+  align-items:center;
+  padding:0 15px;
+}
+.title{
+  font-weight:bold;
+  color:#22c55e;
+}
+
+/* ===== CONTAINER ===== */
+.container{
+  padding:15px;
+  padding-bottom:110px;
+}
+
+/* ===== SECTION ===== */
+.section{
+  margin-bottom:25px;
+}
+.section h3{
+  margin-bottom:10px;
+  font-size:16px;
+  color:#e5e7eb;
+}
+
+/* ===== FORM ===== */
+form{
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:20px;
+}
+form label{
+  display:block;
+  font-size:13px;
+  margin-bottom:5px;
+  color:#94a3b8;
+}
+form input, form textarea{
+  width:100%;
+  padding:8px 10px;
+  margin-bottom:12px;
+  border-radius:8px;
+  border:1px solid #1e293b;
+  background:#0b1220;
+  color:#fff;
+}
+form button{
+  background:#22c55e;
+  color:#020617;
+  border:none;
+  padding:10px 15px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+form button:hover{
+  background:#16a34a;
+}
+
+/* ===== CARDS ===== */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;
+}
+.card{
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:12px;
+  padding:15px;
+  cursor:pointer;
+}
+.card:hover{
+  background:#1e293b;
+}
+.card h4{
+  font-size:15px;
+  margin-bottom:6px;
+}
+.card p{
+  font-size:13px;
+  color:#94a3b8;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.card button{
+  margin-top:8px;
+  margin-right:5px;
+  padding:5px 10px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:12px;
+}
+.edit-btn{background:#22c55e;color:#020617;}
+.delete-btn{background:#ef4444;color:#fff;}
+.edit-btn:hover{background:#16a34a;}
+.delete-btn:hover{background:#dc2626;}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  height:80px;
+  background:#020617;
+  border-top:1px solid #1e293b;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+}
+.nav-item{
+  text-decoration:none;
+  color:#94a3b8;
+  font-size:11px;
+  text-align:center;
+}
+.nav-item span{
+  display:block;
+  font-size:20px;
+  color:#22c55e;
+}
 </style>
 </head>
 
 <body>
 
+<!-- TOP BAR -->
 <div class="topbar">
-  <h3>Subscription Plans</h3>
-  <button class="add-btn" onclick="openPlan()">+ Add Plan</button>
+  <div class="title">📦 Admin Subscriptions</div>
 </div>
 
-<div class="content" id="plansBox"></div>
+<div class="container">
 
-<div class="modal" id="planModal">
-  <div class="modal-box">
-    <h4 id="planTitle">Add Plan</h4>
-    <input id="planName" placeholder="Plan name">
-    <input id="planPrice" placeholder="Price">
-    <input id="planDuration" placeholder="Duration">
-    <button class="save" onclick="savePlan()">Save</button>
+  <!-- ADD / EDIT FORM -->
+  <div class="section">
+    <h3>Add / Edit Subscription</h3>
+    <form id="subscriptionForm">
+      <label for="subName">Plan Name</label>
+      <input type="text" id="subName" placeholder="Enter plan name">
+
+      <label for="subPrice">Price (₦)</label>
+      <input type="number" id="subPrice" placeholder="Enter plan price">
+
+      <label for="subDuration">Duration (days)</label>
+      <input type="number" id="subDuration" placeholder="Enter duration">
+
+      <label for="subDescription">Description</label>
+      <textarea id="subDescription" placeholder="Enter plan description"></textarea>
+
+      <button type="submit">Save Subscription</button>
+    </form>
   </div>
+
+  <!-- EXISTING SUBSCRIPTIONS -->
+  <div class="section">
+    <h3>Existing Plans</h3>
+    <div class="cards" id="subscriptionsBox">
+      <!-- Subscription cards will appear here -->
+      <div class="card">
+        <h4>Example Plan</h4>
+        <p>7 days trial plan</p>
+        <button class="edit-btn">Edit</button>
+        <button class="delete-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <a href="admin-dashboard.html" class="nav-item"><span>🏠</span>Home</a>
-  <a href="admin-subscriptions.html" class="nav-item"><span>📦</span>Plans</a>
-  <a href="admin-courses.html" class="nav-item"><span>🎓</span>Courses</a>
+  <a href="admin-dashboard.html" class="nav-item"><span>🏠</span>Dashboard</a>
+  <a href="admin-payments.html" class="nav-item"><span>💳</span>Payments</a>
+  <a href="admin-users.html" class="nav-item"><span>👥</span>Users</a>
+  <a href="admin-chat.html" class="nav-item"><span>💬</span>Chat</a>
   <a href="admin-settings.html" class="nav-item"><span>⚙️</span>Settings</a>
 </div>
 
-<script type="module">
-import { auth, db } from "./firebase.js";
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-let editId = null;
-const box = document.getElementById("plansBox");
-
-window.openPlan = () => {
-  editId=null;
-  planModal.style.display="flex";
-};
-
-window.savePlan = async ()=>{
-  const name=planName.value.trim();
-  const price=planPrice.value.trim();
-  const duration=planDuration.value.trim();
-  if(!name||!price||!duration) return alert("All fields required");
-
-  if(editId){
-    await updateDoc(doc(db,"plans",editId),{name,price,duration});
-  }else{
-    await addDoc(collection(db,"plans"),{name,price,duration});
-  }
-  planModal.style.display="none";
-  loadPlans();
-};
-
-async function loadPlans(){
-  box.innerHTML="";
-  const snap=await getDocs(collection(db,"plans"));
-  snap.forEach(d=>{
-    const p=d.data();
-    box.innerHTML+=`
-      <div class="plan-card">
-        <b>${p.name}</b><br>
-        ₦${p.price} - ${p.duration}
-        <div class="actions">
-          <button class="edit" onclick="editPlan('${d.id}','${p.name}','${p.price}','${p.duration}')">Edit</button>
-          <button class="delete" onclick="removePlan('${d.id}')">Delete</button>
-        </div>
-      </div>`;
-  });
-}
-
-window.editPlan=(id,n,p,d)=>{
-  editId=id;
-  planName.value=n;
-  planPrice.value=p;
-  planDuration.value=d;
-  planModal.style.display="flex";
-};
-
-window.removePlan=async(id)=>{
-  await deleteDoc(doc(db,"plans",id));
-  loadPlans();
-};
-
-loadPlans();
-</script>
+<script type="module" src="admin.js"></script>
 </body>
 </html>
