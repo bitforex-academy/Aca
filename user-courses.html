@@ -1,90 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Courses | Bitforex Academy</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>User Courses | BitForex Academy</title>
 <style>
-body{margin:0;font-family:Arial;background:#0b1220;color:#fff;}
-.topbar{background:#020617;padding:15px;border-bottom:1px solid #1e293b;}
-.content{padding:20px;padding-bottom:80px;}
-.course{
-  background:#1e293b;
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial, sans-serif;
+  background:#0b1220;
+  color:#fff;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  padding-bottom:80px; /* space for bottom nav */
+}
+
+/* ===== TOP BAR ===== */
+.topbar{
+  height:70px;
+  background:#020617;
+  border-bottom:1px solid #1e293b;
+  display:flex;
+  align-items:center;
+  padding:0 15px;
+}
+.title{
+  font-weight:bold;
+  color:#22c55e;
+  font-size:18px;
+}
+
+/* ===== CONTAINER ===== */
+.container{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:10px 15px;
+  overflow-y:auto;
+  gap:12px;
+}
+
+/* ===== COURSE CARD PLACEHOLDER ===== */
+.course-card{
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:12px;
   padding:15px;
-  border-radius:10px;
-  margin-bottom:15px;
+  min-height:80px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  cursor:pointer;
+  transition:background 0.2s;
 }
-.course button{
-  background:#22c55e;
-  border:none;
-  padding:8px 12px;
-  border-radius:6px;
+.course-card:hover{
+  background:#1e293b;
 }
+.course-card h4{
+  font-size:16px;
+  color:#22c55e;
+  margin-bottom:6px;
+}
+.course-card p{
+  font-size:13px;
+  color:#94a3b8;
+}
+
+/* ===== BOTTOM NAV ===== */
 .bottom-nav{
   position:fixed;
   bottom:0;
   width:100%;
-  height:60px;
+  height:80px;
   background:#020617;
+  border-top:1px solid #1e293b;
   display:flex;
   justify-content:space-around;
   align-items:center;
-  border-top:1px solid #1e293b;
 }
-.bottom-nav a{
-  color:#22c55e;
+.nav-item{
   text-decoration:none;
-  font-size:12px;
+  color:#94a3b8;
+  font-size:11px;
   text-align:center;
+}
+.nav-item span{
+  display:block;
+  font-size:20px;
+  color:#22c55e;
+}
+.nav-item.active span{
+  color:#22c55e;
 }
 </style>
 </head>
 
 <body>
 
-<div class="topbar">📘 Courses</div>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="title">🎓 Courses</div>
+</div>
 
-<div class="content">
-  <div class="course">
-    <b>SMC</b>
-    <p>Smart Money Concept</p>
-    <button onclick="sendCourse('SMC','Smart Money Concept')">View</button>
+<div class="container">
+  <!-- COURSE CARDS -->
+  <div class="course-card">
+    <h4>Course Title 1</h4>
+    <p>Brief description here</p>
   </div>
+  <div class="course-card">
+    <h4>Course Title 2</h4>
+    <p>Brief description here</p>
+  </div>
+  <div class="course-card">
+    <h4>Course Title 3</h4>
+    <p>Brief description here</p>
+  </div>
+  <!-- Add more cards as needed -->
 </div>
 
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <a href="user-chat.html">💬<br>Chat</a>
-  <a href="user-subscription.html">💳<br>Subs</a>
-  <a href="user-courses.html">📘<br>Courses</a>
-  <a href="user-settings.html">⚙️<br>Settings</a>
+  <a href="user-chat.html" class="nav-item"><span>💬</span>Chat</a>
+  <a href="user-subscription.html" class="nav-item"><span>📦</span>Subscription</a>
+  <a href="user-courses.html" class="nav-item active"><span>🎓</span>Courses</a>
+  <a href="user-settings.html" class="nav-item"><span>⚙️</span>Settings</a>
 </div>
 
-<!-- Firebase -->
-<script type="module" src="firebase.js"></script>
-<script type="module" src="app.js"></script>
-
-<script type="module">
-import { auth, db } from "./firebase.js";
-import { ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-window.sendCourse = (title, desc) => {
-  auth.onAuthStateChanged((user) => {
-    if (!user) return;
-
-    const chatRef = ref(db, "chats/" + user.uid + "/messages");
-
-    push(chatRef, {
-      sender: "user",
-      text: `📘 Course Request\nCourse: ${title}\nDescription: ${desc}`,
-      time: Date.now()
-    });
-
-    // Redirect to chat
-    location.href = "user-chat.html";
-  });
-};
-</script>
-
+<script type="module" src="user.js"></script>
 </body>
 </html>
