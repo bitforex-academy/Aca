@@ -2,111 +2,129 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Register | Bitforex Academy</title>
+<title>Register | BitForex Academy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0b1220;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  height:100vh;
+* { box-sizing: border-box; margin:0; padding:0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #0b1220;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
-.card{
-  width:100%;
-  max-width:420px;
-  background:#020617;
-  padding:25px;
-  border-radius:14px;
-  border:1px solid #1e293b;
+
+.container {
+  background: #020617;
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
 }
-h2{margin-bottom:10px}
-input{
-  width:100%;
-  padding:12px;
-  margin-top:12px;
-  border-radius:8px;
-  border:none;
-  background:#1e293b;
-  color:#fff;
+
+h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #22c55e;
 }
-.eye{
-  position:absolute;
-  right:15px;
-  top:50%;
-  transform:translateY(-50%);
-  cursor:pointer;
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+  background: #0b1220;
+  color: #fff;
 }
-.field{
-  position:relative;
+
+input:focus { outline: 2px solid #22c55e; }
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  border-radius: 8px;
+  border: none;
+  background: #22c55e;
+  color: #020617;
+  font-weight: bold;
+  cursor: pointer;
 }
-button{
-  width:100%;
-  padding:12px;
-  margin-top:18px;
-  background:#22c55e;
-  border:none;
-  border-radius:8px;
-  font-weight:bold;
-  cursor:pointer;
+
+button:hover { background: #16a34a; }
+
+.message {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
 }
-#register-message{
-  margin-top:10px;
-  font-size:14px;
+
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 38px;
+  cursor: pointer;
+  color: #22c55e;
 }
-a{color:#22c55e;text-decoration:none}
+
+.input-wrapper {
+  position: relative;
+}
 </style>
 </head>
 
 <body>
+<div class="container">
+  <h2>Register</h2>
 
-<div class="card">
-  <h2>📝 Register</h2>
+  <div class="message" id="register-message"></div>
 
-  <input id="regUsername" placeholder="Username">
+  <form id="registerForm">
+    <input type="text" id="regUsername" placeholder="Username" required>
+    <input type="email" id="regEmail" placeholder="Email" required>
 
-  <input id="regEmail" type="email" placeholder="Email">
+    <div class="input-wrapper">
+      <input type="password" id="regPassword" placeholder="Password" required>
+      <span class="toggle-password" id="toggleRegPwd">👁️</span>
+    </div>
 
-  <div class="field">
-    <input id="regPassword" type="password" placeholder="Password">
-    <span class="eye" id="eye1">👁</span>
-  </div>
+    <div class="input-wrapper">
+      <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+      <span class="toggle-password" id="toggleRegConfirm">👁️</span>
+    </div>
 
-  <div class="field">
-    <input id="regConfirmPassword" type="password" placeholder="Confirm Password">
-    <span class="eye" id="eye2">👁</span>
-  </div>
+    <button type="submit">Register</button>
+  </form>
 
-  <div id="register-message"></div>
-
-  <button id="register-btn">Create Account</button>
-
-  <p style="margin-top:12px">
-    Already have an account? <a href="login.html">Login</a>
+  <p style="text-align:center; margin-top:15px; font-size:14px;">
+    Already have an account? <a href="login.html" style="color:#22c55e; text-decoration:none;">Login</a>
   </p>
 </div>
 
-<!-- 🔹 REGISTER PAGE SCRIPT (ONLY UI) -->
+<script type="module" src="./auth.js"></script>
 <script>
-document.getElementById("register-btn").onclick = (e) => {
-  if (window.registerUser) window.registerUser(e);
-};
+const toggleRegPwd = document.getElementById("toggleRegPwd");
+const regPassword = document.getElementById("regPassword");
 
-// password toggle
-function toggle(id){
-  const p = document.getElementById(id);
-  p.type = p.type === "password" ? "text" : "password";
-}
-eye1.onclick = () => toggle("regPassword");
-eye2.onclick = () => toggle("regConfirmPassword");
+toggleRegPwd.addEventListener("click", ()=>{
+  regPassword.type = regPassword.type === "password" ? "text" : "password";
+});
+
+const toggleRegConfirm = document.getElementById("toggleRegConfirm");
+const regConfirm = document.getElementById("regConfirmPassword");
+
+toggleRegConfirm.addEventListener("click", ()=>{
+  regConfirm.type = regConfirm.type === "password" ? "text" : "password";
+});
+
+// Register
+document.getElementById("registerForm").addEventListener("submit", window.registerUser);
 </script>
-
-<!-- 🔹 APP LOGIC -->
-<script type="module" src="app.js"></script>
-
 </body>
 </html>
