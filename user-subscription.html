@@ -1,68 +1,132 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Subscription | Bitforex Academy</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>User Subscription | BitForex Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <style>
-body{margin:0;font-family:Arial;background:#0b1220;color:#fff;}
-.topbar{background:#020617;padding:15px;border-bottom:1px solid #1e293b;}
-.content{padding:20px;padding-bottom:80px;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial, sans-serif;
+  background:#0b1220;
+  color:#fff;
+  min-height:100vh;
+}
+
+/* ===== TOP BAR ===== */
+.topbar{
+  height:60px;
+  background:#020617;
+  border-bottom:1px solid #1e293b;
+  display:flex;
+  align-items:center;
+  padding:0 15px;
+}
+.title{
+  font-weight:bold;
+  color:#22c55e;
+  font-size:18px;
+}
+
+/* ===== CONTAINER ===== */
+.container{
+  padding:15px;
+  padding-bottom:100px;
+}
+
+/* ===== CARDS ===== */
 .card{
-  background:linear-gradient(to right,#0ea5e9,#22c55e);
-  padding:20px;
+  background:#020617;
+  border:1px solid #1e293b;
   border-radius:12px;
-  color:#000;
+  padding:15px;
   margin-bottom:15px;
 }
-.card button{
-  margin-top:15px;
-  background:#020617;
-  color:#22c55e;
-  padding:10px;
-  border:none;
-  width:100%;
-  border-radius:8px;
+.card h3{
+  font-size:16px;
+  margin-bottom:8px;
 }
+.card p{
+  font-size:14px;
+  color:#94a3b8;
+  margin-bottom:8px;
+}
+button{
+  background:#22c55e;
+  color:#020617;
+  border:none;
+  border-radius:8px;
+  padding:10px 15px;
+  cursor:pointer;
+  font-weight:bold;
+}
+button:hover{
+  background:#16a34a;
+}
+
+/* ===== BOTTOM NAV ===== */
 .bottom-nav{
   position:fixed;
   bottom:0;
   width:100%;
-  height:60px;
+  height:70px;
   background:#020617;
+  border-top:1px solid #1e293b;
   display:flex;
   justify-content:space-around;
   align-items:center;
-  border-top:1px solid #1e293b;
 }
-.bottom-nav a{
-  color:#22c55e;
+.nav-item{
   text-decoration:none;
-  font-size:12px;
+  color:#94a3b8;
+  font-size:11px;
   text-align:center;
+}
+.nav-item span{
+  display:block;
+  font-size:20px;
+  color:#22c55e;
 }
 </style>
 </head>
-
 <body>
 
-<div class="topbar">💳 Subscription</div>
-
-<div class="content">
-  <p>Status: <b id="status" style="color:red">Not Active</b></p>
-  <div id="plans"></div>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="title">📦 Subscriptions</div>
 </div>
 
+<div class="container">
+
+  <!-- SUBSCRIPTION PLANS -->
+  <div class="card">
+    <h3>Basic Plan</h3>
+    <p>Access to selected courses for 7 days</p>
+    <button onclick="location.href='user-payment.html'">Make Payment</button>
+  </div>
+
+  <div class="card">
+    <h3>Standard Plan</h3>
+    <p>Access to all courses for 30 days</p>
+    <button onclick="location.href='user-payment.html'">Make Payment</button>
+  </div>
+
+  <div class="card">
+    <h3>Premium Plan</h3>
+    <p>Access to all courses + premium support for 90 days</p>
+    <button onclick="location.href='user-payment.html'">Make Payment</button>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <a href="user-chat.html">💬<br>Chat</a>
-  <a href="user-subscription.html">💳<br>Subs</a>
-  <a href="user-courses.html">📘<br>Courses</a>
-  <a href="user-settings.html">⚙️<br>Settings</a>
+  <a href="user-chat.html" class="nav-item"><span>💬</span>Chat</a>
+  <a href="user-subscription.html" class="nav-item"><span>📦</span>Subscription</a>
+  <a href="user-courses.html" class="nav-item"><span>🎓</span>Courses</a>
+  <a href="user-settings.html" class="nav-item"><span>⚙️</span>Settings</a>
 </div>
 
-<!-- ONLY THIS -->
-<script type="module" src="app.js"></script>
-
+<script type="module" src="user.js"></script>
 </body>
 </html>
