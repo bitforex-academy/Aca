@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>User Payment | BitForex Academy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-<title>User Courses | BitForex Academy</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
@@ -11,14 +11,11 @@ body{
   background:#0b1220;
   color:#fff;
   min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  padding-bottom:80px; /* space for bottom nav */
 }
 
 /* ===== TOP BAR ===== */
 .topbar{
-  height:70px;
+  height:60px;
   background:#020617;
   border-bottom:1px solid #1e293b;
   display:flex;
@@ -33,38 +30,49 @@ body{
 
 /* ===== CONTAINER ===== */
 .container{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  padding:10px 15px;
-  overflow-y:auto;
-  gap:12px;
+  padding:15px;
+  padding-bottom:100px;
 }
 
-/* ===== COURSE CARD PLACEHOLDER ===== */
-.course-card{
+/* ===== CARDS ===== */
+.card{
   background:#020617;
   border:1px solid #1e293b;
   border-radius:12px;
   padding:15px;
-  min-height:80px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  cursor:pointer;
-  transition:background 0.2s;
+  margin-bottom:15px;
 }
-.course-card:hover{
-  background:#1e293b;
-}
-.course-card h4{
+.card h3{
   font-size:16px;
-  color:#22c55e;
-  margin-bottom:6px;
+  margin-bottom:8px;
 }
-.course-card p{
-  font-size:13px;
+.card p{
+  font-size:14px;
   color:#94a3b8;
+  margin-bottom:8px;
+}
+textarea{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  background:#1e293b;
+  color:#fff;
+  resize:none;
+  margin-bottom:10px;
+  font-family:monospace;
+}
+button{
+  background:#22c55e;
+  color:#020617;
+  border:none;
+  border-radius:8px;
+  padding:10px 15px;
+  cursor:pointer;
+  font-weight:bold;
+}
+button:hover{
+  background:#16a34a;
 }
 
 /* ===== BOTTOM NAV ===== */
@@ -72,7 +80,7 @@ body{
   position:fixed;
   bottom:0;
   width:100%;
-  height:80px;
+  height:70px;
   background:#020617;
   border-top:1px solid #1e293b;
   display:flex;
@@ -90,44 +98,72 @@ body{
   font-size:20px;
   color:#22c55e;
 }
-.nav-item.active span{
-  color:#22c55e;
-}
 </style>
 </head>
-
 <body>
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <div class="title">🎓 Courses</div>
+  <div class="title">💳 Make Payment</div>
 </div>
 
 <div class="container">
-  <!-- COURSE CARDS -->
-  <div class="course-card">
-    <h4>Course Title 1</h4>
-    <p>Brief description here</p>
+
+  <!-- PAYMENT DETAILS -->
+  <div class="card">
+    <h3>Payment Details</h3>
+    <p id="paymentDetails">Please copy the details below to make payment. (Auto-updates from admin)</p>
+
+    <textarea id="copyDetails" readonly rows="8">
+🏦 Bank Payment:
+Bank: XYZ Bank
+Account Name: BitForex Academy
+Account Number: 1234567890
+
+💰 Crypto Payment:
+Bitcoin (BTC) Wallet: 1A2b3C4d5E6f7G8h9I0J
+Ethereum (ETH) Wallet: 0xAbCdEf1234567890
+USDT Wallet: T1234567890abcdef
+    </textarea>
+
+    <button onclick="copyPaymentDetails()">Copy Details</button>
   </div>
-  <div class="course-card">
-    <h4>Course Title 2</h4>
-    <p>Brief description here</p>
+
+  <!-- UPLOAD PAYMENT PROOF -->
+  <div class="card">
+    <h3>Submit Proof of Payment</h3>
+    <input type="file" id="paymentProof" accept="image/*" style="margin-bottom:10px;">
+    <button onclick="submitPayment()">Submit Payment</button>
   </div>
-  <div class="course-card">
-    <h4>Course Title 3</h4>
-    <p>Brief description here</p>
-  </div>
-  <!-- Add more cards as needed -->
+
 </div>
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <a href="user-chat.html" class="nav-item"><span>💬</span>Chat</a>
   <a href="user-subscription.html" class="nav-item"><span>📦</span>Subscription</a>
-  <a href="user-courses.html" class="nav-item active"><span>🎓</span>Courses</a>
+  <a href="user-courses.html" class="nav-item"><span>🎓</span>Courses</a>
   <a href="user-settings.html" class="nav-item"><span>⚙️</span>Settings</a>
 </div>
 
 <script type="module" src="user.js"></script>
+<script>
+function copyPaymentDetails() {
+  const input = document.getElementById("copyDetails");
+  input.select();
+  input.setSelectionRange(0, 99999);
+  document.execCommand("copy");
+  alert("Payment details copied!");
+}
+
+function submitPayment() {
+  const proof = document.getElementById("paymentProof").files[0];
+  if(!proof) return alert("Please upload your payment proof!");
+  
+  // Payment script will handle sending to admin
+  alert("⏳ Payment Pending\nYour payment has been submitted and is awaiting admin approval.");
+}
+</script>
+
 </body>
 </html>
