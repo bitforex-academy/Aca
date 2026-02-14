@@ -2,113 +2,137 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Login | Bitforex Academy</title>
+<title>Login | BitForex Academy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0b1220;
-  color:#fff;
-  height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+* { box-sizing: border-box; margin:0; padding:0; }
+body {
+  font-family: Arial, sans-serif;
+  background: #0b1220;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
 }
-.card{
-  background:#020617;
-  padding:25px;
-  border-radius:12px;
-  width:100%;
-  max-width:400px;
-  border:1px solid #1e293b;
+
+.container {
+  background: #020617;
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
 }
-input{
-  width:100%;
-  padding:12px;
-  margin-top:12px;
-  border:none;
-  border-radius:6px;
+
+h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #22c55e;
 }
-button{
-  width:100%;
-  padding:12px;
-  margin-top:18px;
-  border:none;
-  border-radius:6px;
-  background:#22c55e;
-  font-weight:bold;
-  cursor:pointer;
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+  background: #0b1220;
+  color: #fff;
 }
-.eye{
-  position:absolute;
-  right:12px;
-  top:50%;
-  transform:translateY(-50%);
-  cursor:pointer;
+
+input:focus { outline: 2px solid #22c55e; }
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  border-radius: 8px;
+  border: none;
+  background: #22c55e;
+  color: #020617;
+  font-weight: bold;
+  cursor: pointer;
 }
-.password-wrap{
-  position:relative;
+
+button:hover { background: #16a34a; }
+
+.message {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
 }
-#login-message{
-  margin-top:10px;
-  font-size:14px;
+
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 38px;
+  cursor: pointer;
+  color: #22c55e;
 }
-.success{color:#22c55e;}
-.error{color:#ef4444;}
-a{color:#22c55e;text-decoration:none;font-size:13px;}
+
+.link {
+  display: block;
+  margin-top: 10px;
+  text-align: right;
+  font-size: 13px;
+  color: #94a3b8;
+  text-decoration: none;
+}
+.link:hover { text-decoration: underline; }
+
+.input-wrapper {
+  position: relative;
+}
 </style>
 </head>
 
 <body>
+<div class="container">
+  <h2>Login</h2>
 
-<div class="card">
-  <h2>🔐 Login</h2>
+  <div class="message" id="login-message"></div>
 
-  <input id="loginEmail" type="email" placeholder="Email">
+  <form id="loginForm">
+    <input type="email" id="loginEmail" placeholder="Email" required>
+    <div class="input-wrapper">
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <span class="toggle-password" id="toggleLoginPwd">👁️</span>
+    </div>
+    <button type="submit">Login</button>
+    <a href="#" class="link" id="forgotPwd">Forgot Password?</a>
+  </form>
 
-  <div class="password-wrap">
-    <input id="loginPassword" type="password" placeholder="Password">
-    <span id="toggleEye" class="eye">👁</span>
-  </div>
-
-  <div id="login-message"></div>
-
-  <button id="login-btn">Login</button>
-
-  <p style="margin-top:12px">
-    <a href="#" id="forgotLink">Forgot password?</a>
+  <p style="text-align:center; margin-top:15px; font-size:14px;">
+    Don't have an account? <a href="register.html" style="color:#22c55e; text-decoration:none;">Register</a>
   </p>
 </div>
 
-<!-- 🔥 IMPORTANT: APP.JS MUST LOAD FIRST -->
-<script type="module" src="app.js"></script>
-
-<!-- 🔥 INLINE SCRIPT AFTER app.js -->
+<script type="module" src="./auth.js"></script>
 <script>
-document.getElementById("toggleEye").onclick = () => {
-  const p = document.getElementById("loginPassword");
-  p.type = p.type === "password" ? "text" : "password";
-};
+const toggleLoginPwd = document.getElementById("toggleLoginPwd");
+const loginPassword = document.getElementById("loginPassword");
 
-document.getElementById("login-btn").onclick = (e) => {
-  e.preventDefault();
-  if (window.loginUser) {
-    window.loginUser(e);
-  } else {
-    alert("Login system not loaded");
-  }
-};
+toggleLoginPwd.addEventListener("click", ()=>{
+  loginPassword.type = loginPassword.type === "password" ? "text" : "password";
+});
 
-document.getElementById("forgotLink").onclick = (e) => {
+// Forgot Password
+document.getElementById("forgotPwd").addEventListener("click", async (e)=>{
   e.preventDefault();
-  const email = document.getElementById("loginEmail").value;
-  if (window.forgotPassword) {
-    window.forgotPassword(email);
+  const email = document.getElementById("loginEmail").value.trim();
+  if(!email) return alert("Enter your email first");
+  try {
+    await window.forgotPassword(email);
+  } catch(err) {
+    alert(err.message);
   }
-};
+});
+
+// Login
+document.getElementById("loginForm").addEventListener("submit", window.loginUser);
 </script>
-
 </body>
 </html>
