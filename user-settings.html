@@ -1,101 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Settings | Bitforex Academy</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>User Settings | BitForex Academy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
 <style>
-body{margin:0;font-family:Arial;background:#0b1220;color:#fff;}
-.topbar{background:#020617;padding:15px;border-bottom:1px solid #1e293b;}
-.content{padding:20px;padding-bottom:80px;}
-input,button{
-  width:100%;
-  padding:10px;
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial, sans-serif;
+  background:#0b1220;
+  color:#fff;
+  min-height:100vh;
+  padding-bottom:90px;
+}
+
+/* ===== TOP BAR ===== */
+.topbar{
+  height:60px;
+  background:#020617;
+  border-bottom:1px solid #1e293b;
+  display:flex;
+  align-items:center;
+  padding:0 15px;
+}
+.title{
+  font-weight:bold;
+  color:#22c55e;
+  font-size:18px;
+}
+
+/* ===== CONTAINER ===== */
+.container{
+  padding:15px;
+}
+
+/* ===== SECTIONS ===== */
+.section{
+  margin-bottom:20px;
+}
+.section h3{
+  font-size:16px;
   margin-bottom:10px;
-  border-radius:6px;
+  color:#e5e7eb;
+}
+
+/* ===== CARDS ===== */
+.card{
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:10px;
+}
+.card label{
+  display:block;
+  font-size:13px;
+  margin-bottom:5px;
+  color:#94a3b8;
+}
+.card input{
+  width:100%;
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid #1e293b;
+  background:#0b1220;
+  color:#fff;
+  margin-bottom:10px;
+}
+
+/* ===== BUTTON ===== */
+button{
+  background:#22c55e;
+  color:#020617;
   border:none;
+  padding:10px 15px;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
 }
-button{background:#22c55e;font-weight:bold;}
-.logout{background:red;color:#fff;}
+button:hover{
+  opacity:0.85;
+}
+
+/* ===== BOTTOM NAV ===== */
 .bottom-nav{
-  position:fixed;bottom:0;width:100%;height:60px;
-  background:#020617;display:flex;justify-content:space-around;
-  align-items:center;border-top:1px solid #1e293b;
+  position:fixed;
+  bottom:0;
+  width:100%;
+  height:80px;
+  background:#020617;
+  border-top:1px solid #1e293b;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
 }
-.bottom-nav a{color:#22c55e;text-decoration:none;font-size:12px;text-align:center;}
+.nav-item{
+  text-decoration:none;
+  color:#94a3b8;
+  font-size:11px;
+  text-align:center;
+}
+.nav-item span{
+  display:block;
+  font-size:20px;
+  color:#22c55e;
+}
 </style>
 </head>
-
 <body>
 
-<div class="topbar">⚙️ Settings</div>
-
-<div class="content">
-  <input id="username" placeholder="Username">
-  <input id="email" placeholder="Email">
-  <input type="password" id="newPass" placeholder="New Password">
-  <button onclick="updateProfile()">Submit</button>
-  <button class="logout" onclick="logout()">Logout</button>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="title">⚙️ User Settings</div>
 </div>
 
+<div class="container">
+
+  <!-- ACCOUNT SECTION -->
+  <div class="section">
+    <h3>Account Settings</h3>
+    <div class="card">
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Enter username">
+
+      <label for="name">Full Name</label>
+      <input type="text" id="name" placeholder="Enter full name">
+
+      <button onclick="saveAccount()">Save Account</button>
+    </div>
+  </div>
+
+  <!-- SECURITY SECTION -->
+  <div class="section">
+    <h3>Security Settings</h3>
+    <div class="card">
+      <label for="email">Login Email</label>
+      <input type="email" id="email" placeholder="Enter email">
+
+      <label for="password">Change Password</label>
+      <input type="password" id="password" placeholder="Enter new password">
+
+      <button onclick="saveSecurity()">Save Security</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <a href="user-chat.html">💬<br>Chat</a>
-  <a href="user-subscription.html">💳<br>Subs</a>
-  <a href="user-courses.html">📘<br>Courses</a>
-  <a href="user-settings.html">⚙️<br>Settings</a>
+  <a href="user-chat.html" class="nav-item"><span>💬</span>Chat</a>
+  <a href="user-subscription.html" class="nav-item"><span>📦</span>Subscription</a>
+  <a href="user-courses.html" class="nav-item"><span>🎓</span>Courses</a>
+  <a href="user-settings.html" class="nav-item"><span>⚙️</span>Settings</a>
 </div>
 
-<!-- Firebase -->
-<script type="module" src="firebase.js"></script>
-
-<script type="module">
-import { auth } from "./firebase.js";
-import {
-  updateProfile,
-  updateEmail,
-  updatePassword,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-/* Load user data */
-onAuthStateChanged(auth, user=>{
-  if(!user) location.href="login.html";
-  username.value = user.displayName || "";
-  email.value = user.email || "";
-});
-
-/* Update profile */
-window.updateProfile = async ()=>{
-  const user = auth.currentUser;
-  if(!user) return;
-
-  try{
-    if(username.value){
-      await updateProfile(user,{displayName:username.value});
-    }
-
-    if(email.value !== user.email){
-      await updateEmail(user,email.value);
-    }
-
-    if(newPass.value.length >= 6){
-      await updatePassword(user,newPass.value);
-    }
-
-    alert("Profile updated successfully");
-    newPass.value="";
-  }catch(err){
-    alert(err.message);
+<script type="module" src="user.js"></script>
+<script>
+function saveAccount(){
+  if(confirm("Are you sure you want to save account details?")){
+    alert("Account details saved! (Script to update Firestore goes here)");
   }
-};
-
-/* Logout */
-window.logout = async ()=>{
-  await signOut(auth);
-  location.href="login.html";
-};
+}
+function saveSecurity(){
+  if(confirm("Are you sure you want to save security details?")){
+    alert("Security details saved! (Script to update Firestore goes here)");
+  }
+}
 </script>
 
 </body>
